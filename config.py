@@ -13,4 +13,7 @@ PRODUCTS_FILE = "data/products.json"
 ACCOUNTS_FILE = "data/accounts.json"
 
 # Cấu hình khác
-CURRENCY = "VND" 
+CURRENCY = "VND"
+
+# Thêm vào file config.py
+SETTINGS_FILE = 'data/settings.json' 

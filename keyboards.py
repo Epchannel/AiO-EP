@@ -1,13 +1,29 @@
 from typing import List, Dict, Any
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from database import Database
 
 def main_menu(is_admin: bool = False) -> InlineKeyboardMarkup:
     """Tạo bàn phím menu chính"""
+    db = Database()
+    
+    # Lấy cài đặt hiển thị
+    settings = db.get_visibility_settings()
+    show_premium = settings.get('show_premium', True)
+    
     markup = InlineKeyboardMarkup()
-    markup.row(
-        InlineKeyboardButton("🔐 Tài khoản trả phí", callback_data="premium_accounts"),
-        InlineKeyboardButton("🆓 Tài khoản miễn phí", callback_data="free_accounts")
-    )
+    
+    # Chỉ hiển thị nút "Tài khoản trả phí" nếu cài đặt cho phép
+    if show_premium:
+        markup.row(
+            InlineKeyboardButton("🔐 Tài khoản trả phí", callback_data="premium_accounts"),
+            InlineKeyboardButton("🆓 Tài khoản miễn phí", callback_data="free_accounts")
+        )
+    else:
+        # Nếu không hiển thị tài khoản trả phí, chỉ hiển thị tài khoản miễn phí
+        markup.row(
+            InlineKeyboardButton("🆓 Tài khoản miễn phí", callback_data="free_accounts")
+        )
+    
     markup.row(
         InlineKeyboardButton("📚 Hướng dẫn", callback_data="tutorial"),
         InlineKeyboardButton("💰 Số dư", callback_data="balance")
@@ -179,4 +195,31 @@ def back_button(callback_data: str = "back_to_main") -> InlineKeyboardMarkup:
     """Tạo nút quay lại"""
     markup = InlineKeyboardMarkup()
     markup.row(InlineKeyboardButton("🔙 Quay lại", callback_data=callback_data))
+    return markup
+
+def admin_panel_keyboard() -> InlineKeyboardMarkup:
+    """Tạo bàn phím panel quản trị"""
+    from database import Database
+    db = Database()
+    
+    # Lấy cài đặt hiển thị
+    settings = db.get_visibility_settings()
+    show_premium = settings.get('show_premium', True)
+    
+    markup = InlineKeyboardMarkup()
+    markup.row(
+        InlineKeyboardButton("👥 Quản lý người dùng", callback_data="manage_users"),
+        InlineKeyboardButton("🏷️ Quản lý sản phẩm", callback_data="manage_products")
+    )
+    markup.row(
+        InlineKeyboardButton("📊 Thống kê", callback_data="statistics"),
+        InlineKeyboardButton("🔙 Quay lại", callback_data="back_to_main")
+    )
+    
+    # Thêm nút bật/tắt hiển thị tài khoản trả phí
+    status_text = "✅" if show_premium else "❌"
+    markup.row(
+        InlineKeyboardButton(f"{status_text} Hiển thị tài khoản trả phí", callback_data="toggle_premium_visibility")
+    )
+    
     return markup 

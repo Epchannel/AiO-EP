@@ -216,4 +216,23 @@ class Database:
     def update_visibility_setting(self, key: str, value: bool) -> None:
         """Cập nhật cài đặt hiển thị trong cơ sở dữ liệu"""
         # Đây là ví dụ, bạn cần triển khai theo cơ sở dữ liệu của mình
-        self.update_setting(key, value) 
+        self.update_setting(key, value)
+    
+    def get_settings(self) -> Dict:
+        """Lấy tất cả cài đặt"""
+        if not os.path.exists(config.SETTINGS_FILE):
+            # Tạo file cài đặt mặc định nếu chưa tồn tại
+            default_settings = {
+                'show_premium': True,
+                'show_free': True
+            }
+            self._write_data(config.SETTINGS_FILE, default_settings)
+            return default_settings
+        
+        return self._read_data(config.SETTINGS_FILE)
+    
+    def update_setting(self, key: str, value: Any) -> None:
+        """Cập nhật một cài đặt"""
+        settings = self.get_settings()
+        settings[key] = value
+        self._write_data(config.SETTINGS_FILE, settings) 

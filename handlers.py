@@ -98,6 +98,7 @@ def start_command(bot: TeleBot, message: Message) -> None:
         welcome_text,
         reply_markup=keyboards.main_menu(is_admin(user_id))
     )
+
 def help_command(bot: TeleBot, message: Message) -> None:
     """Xử lý lệnh /help"""
     user_id = message.from_user.id
@@ -814,12 +815,19 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
         )
     
     elif data == "admin_panel" and is_admin(user_id):
-        # Hiển thị panel quản trị
+        # Lấy cài đặt hiển thị
+        settings = db.get_visibility_settings()
+        show_premium = settings.get('show_premium', True)
+        
+        # Hiển thị bảng điều khiển quản trị
         bot.edit_message_text(
-            "⚙️ Panel quản trị viên",
+            "⚙️ *Bảng điều khiển quản trị*\n\n"
+            f"Hiển thị tài khoản trả phí: {'Bật' if show_premium else 'Tắt'}\n\n"
+            "Chọn một tùy chọn bên dưới:",
             call.message.chat.id,
             call.message.message_id,
-            reply_markup=keyboards.admin_panel()
+            parse_mode="Markdown",
+            reply_markup=keyboards.admin_panel_keyboard()
         )
     
     elif data == "manage_products" and is_admin(user_id):
@@ -1294,6 +1302,34 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
             call.message.chat.id,
             call.message.message_id,
             parse_mode="Markdown"
+        )
+    
+    elif data == "toggle_premium_visibility" and is_admin(user_id):
+        # Lấy cài đặt hiện tại
+        settings = db.get_visibility_settings()
+        show_premium = settings.get('show_premium', True)
+        
+        # Đảo ngược trạng thái
+        new_status = not show_premium
+        db.update_visibility_setting('show_premium', new_status)
+        
+        status_text = "bật" if new_status else "tắt"
+        
+        # Thông báo cho admin
+        bot.answer_callback_query(
+            call.id,
+            f"Đã {status_text} hiển thị tài khoản trả phí",
+            show_alert=True
+        )
+        
+        # Cập nhật menu admin
+        bot.edit_message_text(
+            "⚙️ *Bảng điều khiển quản trị*\n\n"
+            f"Hiển thị tài khoản trả phí: {'Bật' if new_status else 'Tắt'}",
+            call.message.chat.id,
+            call.message.message_id,
+            parse_mode="Markdown",
+            reply_markup=keyboards.admin_panel_keyboard()
         )
     
     # Đánh dấu callback đã được xử lý
