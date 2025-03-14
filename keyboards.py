@@ -29,6 +29,9 @@ def admin_panel() -> InlineKeyboardMarkup:
     )
     markup.row(
         InlineKeyboardButton("📊 Thống kê", callback_data="statistics"),
+        InlineKeyboardButton("📣 Gửi thông báo", callback_data="broadcast")
+    )
+    markup.row(
         InlineKeyboardButton("🔙 Quay lại", callback_data="back_to_main")
     )
     return markup
@@ -55,6 +58,9 @@ def user_management() -> InlineKeyboardMarkup:
     markup.row(
         InlineKeyboardButton("🚫 Cấm người dùng", callback_data="ban_user"),
         InlineKeyboardButton("✅ Bỏ cấm người dùng", callback_data="unban_user")
+    )
+    markup.row(
+        InlineKeyboardButton("👑 Thêm admin", callback_data="add_admin")
     )
     markup.row(
         InlineKeyboardButton("🔙 Quay lại", callback_data="back_to_admin")
@@ -105,33 +111,31 @@ def product_list_keyboard(products: List[Dict[str, Any]], page: int = 0, admin: 
     
     return markup
 
-def user_list_keyboard(users: List[Dict[str, Any]], page: int = 0) -> InlineKeyboardMarkup:
+def user_list_keyboard(users: List[Dict[str, Any]], page: int = 0, items_per_page: int = 5) -> InlineKeyboardMarkup:
     """Tạo bàn phím danh sách người dùng"""
     markup = InlineKeyboardMarkup()
     
-    # Hiển thị 5 người dùng mỗi trang
-    items_per_page = 5
+    # Tính toán phân trang
     start_idx = page * items_per_page
     end_idx = min(start_idx + items_per_page, len(users))
     
-    for i in range(start_idx, end_idx):
-        user = users[i]
-        user_name = user.get('username', 'Không tên')
-        user_id = user.get('id', 0)
+    # Hiển thị người dùng
+    for user in users[start_idx:end_idx]:
+        username = user.get('username', 'Không có')
         banned = "🚫 " if user.get('banned', False) else ""
-        
-        markup.row(InlineKeyboardButton(
-            f"{banned}{user_name}", 
-            callback_data=f"admin_user_{user_id}"
-        ))
+        markup.row(
+            InlineKeyboardButton(
+                f"{banned}@{username} (ID: {user['id']})",
+                callback_data=f"view_user_{user['id']}"
+            )
+        )
     
-    # Nút điều hướng trang
+    # Nút phân trang
     nav_buttons = []
     if page > 0:
-        nav_buttons.append(InlineKeyboardButton("⬅️ Trước", callback_data=f"user_page_{page-1}"))
-    
+        nav_buttons.append(InlineKeyboardButton("⬅️ Trang trước", callback_data=f"user_page_{page-1}"))
     if end_idx < len(users):
-        nav_buttons.append(InlineKeyboardButton("➡️ Sau", callback_data=f"user_page_{page+1}"))
+        nav_buttons.append(InlineKeyboardButton("➡️ Trang sau", callback_data=f"user_page_{page+1}"))
     
     if nav_buttons:
         markup.row(*nav_buttons)
@@ -179,4 +183,19 @@ def back_button(callback_data: str = "back_to_main") -> InlineKeyboardMarkup:
     """Tạo nút quay lại"""
     markup = InlineKeyboardMarkup()
     markup.row(InlineKeyboardButton("🔙 Quay lại", callback_data=callback_data))
+    return markup
+
+def user_detail_keyboard(user_id: int) -> InlineKeyboardMarkup:
+    """Tạo bàn phím chi tiết người dùng"""
+    markup = InlineKeyboardMarkup()
+    markup.row(
+        InlineKeyboardButton("💰 Thêm tiền", callback_data=f"add_money_{user_id}"),
+        InlineKeyboardButton("🚫 Cấm người dùng", callback_data=f"ban_user_{user_id}")
+    )
+    markup.row(
+        InlineKeyboardButton("✅ Bỏ cấm người dùng", callback_data=f"unban_user_{user_id}")
+    )
+    markup.row(
+        InlineKeyboardButton("🔙 Quay lại", callback_data="back_to_user_list")
+    )
     return markup 

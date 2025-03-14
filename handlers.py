@@ -6,6 +6,15 @@ import keyboards
 import re
 import datetime
 from typing import Dict, List, Optional, Any
+import logging
+import time
+
+# Thiết lập logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 db = Database()
 
@@ -32,6 +41,8 @@ def register_handlers(bot: TeleBot) -> None:
     bot.register_message_handler(lambda msg: user_list_command(bot, msg), commands=['user_list'], func=lambda msg: is_admin(msg.from_user.id))
     bot.register_message_handler(lambda msg: ban_user_command(bot, msg), commands=['ban_user'], func=lambda msg: is_admin(msg.from_user.id))
     bot.register_message_handler(lambda msg: unban_user_command(bot, msg), commands=['unban_user'], func=lambda msg: is_admin(msg.from_user.id))
+    bot.register_message_handler(lambda msg: broadcast_command(bot, msg), commands=['broadcast'], func=lambda msg: is_admin(msg.from_user.id))
+    bot.register_message_handler(lambda msg: add_admin_command(bot, msg), commands=['add_admin'], func=lambda msg: is_admin(msg.from_user.id))
     
     # Callback query handlers
     bot.register_callback_query_handler(lambda call: handle_callback_query(bot, call), func=lambda call: True)
@@ -43,6 +54,8 @@ def start_command(bot: TeleBot, message: Message) -> None:
     """Xử lý lệnh /start"""
     user_id = message.from_user.id
     username = message.from_user.username or f"user_{user_id}"
+    
+    logger.info(f"User {username} (ID: {user_id}) started the bot")
     
     # Kiểm tra xem người dùng đã tồn tại chưa
     user = db.get_user(user_id)
@@ -80,6 +93,9 @@ def start_command(bot: TeleBot, message: Message) -> None:
 def help_command(bot: TeleBot, message: Message) -> None:
     """Xử lý lệnh /help"""
     user_id = message.from_user.id
+    username = message.from_user.username or f"user_{user_id}"
+    
+    logger.info(f"User {username} (ID: {user_id}) requested help")
     
     # Kiểm tra xem người dùng có bị cấm không
     user = db.get_user(user_id)
@@ -398,13 +414,45 @@ def unban_user_command(bot: TeleBot, message: Message) -> None:
     else:
         bot.send_message(user_id, "❌ Không thể bỏ cấm người dùng này.")
 
+def broadcast_command(bot: TeleBot, message: Message) -> None:
+    """Xử lý lệnh /broadcast - Gửi thông báo đến tất cả người dùng"""
+    user_id = message.from_user.id
+    username = message.from_user.username or f"user_{user_id}"
+    
+    logger.info(f"Admin {username} (ID: {user_id}) started broadcast")
+    
+    # Lưu trạng thái để nhận nội dung thông báo
+    user_states[user_id] = {
+        'state': 'waiting_for_broadcast',
+        'data': {}
+    }
+    
+    bot.send_message(
+        user_id,
+        "📣 *Gửi thông báo đến tất cả người dùng*\n\n"
+        "Vui lòng nhập nội dung thông báo bạn muốn gửi.\n"
+        "Bạn có thể sử dụng định dạng Markdown.\n\n"
+        "Gửi /cancel để hủy.",
+        parse_mode="Markdown"
+    )
+
 def handle_state(bot: TeleBot, message: Message) -> None:
     """Xử lý tin nhắn dựa trên trạng thái của người dùng"""
     user_id = message.from_user.id
+    username = message.from_user.username or f"user_{user_id}"
     text = message.text
+    
+    logger.info(f"User {username} (ID: {user_id}) sent message in state {user_states.get(user_id, {}).get('state')}: {text}")
     
     state = user_states.get(user_id, {}).get('state')
     
+    # Kiểm tra lệnh hủy
+    if text == '/cancel':
+        del user_states[user_id]
+        bot.send_message(user_id, "❌ Đã hủy thao tác.")
+        return
+    
+    # Xử lý các trạng thái
     if state == 'waiting_for_accounts':
         product_id = user_states[user_id]['product_id']
         
@@ -427,6 +475,48 @@ def handle_state(bot: TeleBot, message: Message) -> None:
             f"✅ Đã thêm {count} tài khoản cho sản phẩm *{product['name']}*.",
             parse_mode="Markdown"
         )
+    
+    elif state == 'waiting_for_add_money' and is_admin(user_id):
+        # Xử lý thêm tiền cho người dùng
+        target_user_id = user_states[user_id]['target_user_id']
+        
+        try:
+            amount = float(text)
+            if amount <= 0:
+                bot.send_message(user_id, "❌ Số tiền phải lớn hơn 0.")
+                return
+        except ValueError:
+            bot.send_message(user_id, "❌ Số tiền không hợp lệ. Vui lòng nhập một số.")
+            return
+        
+        # Xóa trạng thái
+        del user_states[user_id]
+        
+        # Thêm tiền cho người dùng
+        target_user = db.get_user(target_user_id)
+        if target_user:
+            new_balance = target_user.get('balance', 0) + amount
+            db.update_user(target_user_id, {'balance': new_balance})
+            
+            bot.send_message(
+                user_id,
+                f"✅ Đã thêm {amount:,} {config.CURRENCY} cho người dùng thành công!\n\n"
+                f"ID: {target_user['id']}\n"
+                f"Username: @{target_user.get('username', 'Không có')}\n"
+                f"Số dư mới: {new_balance:,} {config.CURRENCY}"
+            )
+            
+            # Thông báo cho người dùng
+            try:
+                bot.send_message(
+                    target_user_id,
+                    f"💰 Tài khoản của bạn vừa được cộng {amount:,} {config.CURRENCY}.\n"
+                    f"Số dư hiện tại: {new_balance:,} {config.CURRENCY}"
+                )
+            except Exception as e:
+                logger.error(f"Không thể gửi thông báo đến người dùng {target_user_id}: {e}")
+        else:
+            bot.send_message(user_id, "❌ Không thể thêm tiền cho người dùng này.")
     
     elif state == 'waiting_for_product_name':
         # Lưu tên sản phẩm và chuyển sang trạng thái chờ giá
@@ -534,12 +624,158 @@ def handle_state(bot: TeleBot, message: Message) -> None:
             )
         else:
             bot.send_message(user_id, "❌ Không thể thêm tiền cho người dùng này.")
+    
+    elif state == 'waiting_for_broadcast' and is_admin(user_id):
+        # Xử lý gửi thông báo đến tất cả người dùng
+        broadcast_message = text
+        
+        # Xóa trạng thái
+        del user_states[user_id]
+        
+        # Lấy danh sách tất cả người dùng
+        users = db.get_all_users()
+        success_count = 0
+        fail_count = 0
+        
+        # Gửi tin nhắn xác nhận trước
+        confirm_msg = bot.send_message(
+            user_id,
+            f"🔄 Đang gửi thông báo đến {len(users)} người dùng...",
+        )
+        
+        # Gửi thông báo đến từng người dùng
+        for user in users:
+            try:
+                # Bỏ qua người dùng bị cấm
+                if user.get('banned', False):
+                    continue
+                
+                # Gửi thông báo
+                bot.send_message(
+                    user['id'],
+                    f"📣 *THÔNG BÁO*\n\n{broadcast_message}",
+                    parse_mode="Markdown"
+                )
+                success_count += 1
+                
+                # Tránh bị giới hạn tốc độ của Telegram
+                time.sleep(0.1)
+                
+            except Exception as e:
+                logger.error(f"Không thể gửi thông báo đến người dùng {user.get('id')}: {e}")
+                fail_count += 1
+        
+        # Cập nhật tin nhắn xác nhận
+        bot.edit_message_text(
+            f"✅ Đã gửi thông báo thành công!\n\n"
+            f"📊 Thống kê:\n"
+            f"- Tổng số người dùng: {len(users)}\n"
+            f"- Gửi thành công: {success_count}\n"
+            f"- Gửi thất bại: {fail_count}",
+            user_id,
+            confirm_msg.message_id
+        )
+
+    elif state == 'waiting_for_user_id_to_add_money' and is_admin(user_id):
+        # Xử lý nhập ID người dùng để thêm tiền
+        try:
+            target_user_id = int(text)
+            target_user = db.get_user(target_user_id)
+            
+            if not target_user:
+                bot.send_message(user_id, "❌ Không tìm thấy người dùng với ID này.")
+                return
+            
+            # Cập nhật trạng thái
+            user_states[user_id] = {
+                'state': 'waiting_for_add_money',
+                'target_user_id': target_user_id
+            }
+            
+            bot.send_message(
+                user_id,
+                f"💰 Thêm tiền cho người dùng:\n\n"
+                f"ID: {target_user['id']}\n"
+                f"Username: @{target_user.get('username', 'Không có')}\n"
+                f"Số dư hiện tại: {target_user.get('balance', 0):,} {config.CURRENCY}\n\n"
+                f"Vui lòng nhập số tiền muốn thêm:"
+            )
+            
+        except ValueError:
+            bot.send_message(user_id, "❌ ID người dùng không hợp lệ. Vui lòng nhập một số.")
+
+    elif state == 'waiting_for_admin_id' and is_admin(user_id):
+        # Xử lý thêm admin mới
+        try:
+            new_admin_id = int(text)
+        except ValueError:
+            bot.send_message(user_id, "❌ ID người dùng phải là một số.")
+            return
+        
+        # Kiểm tra xem người dùng đã là admin chưa
+        if is_admin(new_admin_id):
+            bot.send_message(user_id, "❌ Người dùng này đã là admin.")
+            return
+        
+        # Kiểm tra xem người dùng có tồn tại không
+        new_admin = db.get_user(new_admin_id)
+        if not new_admin:
+            bot.send_message(user_id, "❌ Không tìm thấy người dùng với ID này.")
+            return
+        
+        # Xóa trạng thái
+        del user_states[user_id]
+        
+        # Thêm người dùng vào danh sách admin
+        admin_ids = config.ADMIN_IDS.copy()
+        admin_ids.append(new_admin_id)
+        
+        # Cập nhật file config.py
+        try:
+            with open('config.py', 'r', encoding='utf-8') as file:
+                config_content = file.read()
+            
+            # Tìm và thay thế dòng ADMIN_IDS
+            import re
+            new_admin_line = f"ADMIN_IDS = {str(admin_ids)}"
+            config_content = re.sub(r'ADMIN_IDS = \[.*?\]', new_admin_line, config_content, flags=re.DOTALL)
+            
+            with open('config.py', 'w', encoding='utf-8') as file:
+                file.write(config_content)
+            
+            # Cập nhật biến ADMIN_IDS trong config
+            config.ADMIN_IDS = admin_ids
+            
+            bot.send_message(
+                user_id,
+                f"✅ Đã thêm người dùng ID: {new_admin_id} (@{new_admin.get('username', 'Không có')}) làm admin thành công!\n\n"
+                f"⚠️ Lưu ý: Bạn cần khởi động lại bot để áp dụng thay đổi."
+            )
+            
+            # Thông báo cho người dùng mới được thêm làm admin
+            try:
+                bot.send_message(
+                    new_admin_id,
+                    "🎉 Chúc mừng! Bạn đã được thêm làm quản trị viên của bot.\n"
+                    "Sử dụng /help để xem các lệnh quản trị viên."
+                )
+            except Exception as e:
+                logger.error(f"Không thể gửi thông báo đến người dùng {new_admin_id}: {e}")
+            
+        except Exception as e:
+            logger.error(f"Lỗi khi cập nhật file config.py: {e}")
+            bot.send_message(
+                user_id,
+                "❌ Đã xảy ra lỗi khi thêm admin. Vui lòng thử lại sau hoặc thêm thủ công vào file config.py."
+            )
 
 def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
     """Xử lý các callback query từ bàn phím inline"""
     user_id = call.from_user.id
-    message_id = call.message.message_id
+    username = call.from_user.username or f"user_{user_id}"
     data = call.data
+    
+    logger.info(f"User {username} (ID: {user_id}) pressed button: {data}")
     
     # Kiểm tra xem người dùng có bị cấm không
     user = db.get_user(user_id)
@@ -719,9 +955,11 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
     elif data == "manage_users" and is_admin(user_id):
         # Hiển thị menu quản lý người dùng
         bot.edit_message_text(
-            "👥 Quản lý người dùng",
+            "👥 *Quản lý người dùng*\n\n"
+            "Chọn một tùy chọn bên dưới:",
             call.message.chat.id,
             call.message.message_id,
+            parse_mode="Markdown",
             reply_markup=keyboards.user_management()
         )
     
@@ -753,9 +991,11 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
         # Hiển thị danh sách người dùng
         users = db.get_all_users()
         bot.edit_message_text(
-            "📋 Danh sách người dùng:",
+            "📋 *Danh sách người dùng*\n\n"
+            "Chọn một người dùng để xem chi tiết:",
             call.message.chat.id,
             call.message.message_id,
+            parse_mode="Markdown",
             reply_markup=keyboards.user_list_keyboard(users)
         )
     
@@ -944,5 +1184,248 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
             reply_markup=keyboards.user_list_keyboard(users, page=page)
         )
     
+    # Thêm xử lý cho các nút admin
+    elif data.startswith("add_money_") and is_admin(user_id):
+        # Thêm tiền cho người dùng
+        target_user_id = int(data.split("_")[2])
+        target_user = db.get_user(target_user_id)
+        
+        if target_user:
+            # Lưu trạng thái để nhận số tiền
+            user_states[user_id] = {
+                'state': 'waiting_for_add_money',
+                'target_user_id': target_user_id
+            }
+            
+            bot.edit_message_text(
+                f"💰 Thêm tiền cho người dùng:\n\n"
+                f"ID: {target_user['id']}\n"
+                f"Username: @{target_user.get('username', 'Không có')}\n"
+                f"Số dư hiện tại: {target_user.get('balance', 0):,} {config.CURRENCY}\n\n"
+                f"Vui lòng nhập số tiền muốn thêm:",
+                call.message.chat.id,
+                call.message.message_id
+            )
+    
+    elif data.startswith("ban_user_") and is_admin(user_id):
+        # Cấm người dùng
+        target_user_id = int(data.split("_")[2])
+        target_user = db.get_user(target_user_id)
+        
+        if target_user:
+            # Không cho phép cấm admin
+            if is_admin(target_user_id):
+                bot.answer_callback_query(call.id, "⛔ Không thể cấm quản trị viên khác.")
+                return
+            
+            # Cấm người dùng
+            db.update_user(target_user_id, {'banned': True})
+            
+            bot.edit_message_text(
+                f"✅ Đã cấm người dùng thành công!\n\n"
+                f"ID: {target_user['id']}\n"
+                f"Username: @{target_user.get('username', 'Không có')}",
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=keyboards.back_button("back_to_user_list")
+            )
+    
+    elif data.startswith("unban_user_") and is_admin(user_id):
+        # Bỏ cấm người dùng
+        target_user_id = int(data.split("_")[2])
+        target_user = db.get_user(target_user_id)
+        
+        if target_user:
+            # Bỏ cấm người dùng
+            db.update_user(target_user_id, {'banned': False})
+            
+            bot.edit_message_text(
+                f"✅ Đã bỏ cấm người dùng thành công!\n\n"
+                f"ID: {target_user['id']}\n"
+                f"Username: @{target_user.get('username', 'Không có')}",
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=keyboards.back_button("back_to_user_list")
+            )
+    
+    elif data.startswith("upload_accounts_") and is_admin(user_id):
+        # Upload tài khoản cho sản phẩm
+        product_id = int(data.split("_")[2])
+        product = db.get_product(product_id)
+        
+        if product:
+            # Lưu trạng thái để nhận danh sách tài khoản
+            user_states[user_id] = {
+                'state': 'waiting_for_accounts',
+                'product_id': product_id
+            }
+            
+            bot.edit_message_text(
+                f"📤 Upload tài khoản cho sản phẩm:\n\n"
+                f"ID: {product['id']}\n"
+                f"Tên: {product['name']}\n\n"
+                f"Vui lòng nhập danh sách tài khoản, mỗi tài khoản một dòng.\n"
+                f"Định dạng: username:password hoặc email:password",
+                call.message.chat.id,
+                call.message.message_id
+            )
+    
+    elif data == "broadcast" and is_admin(user_id):
+        # Bắt đầu quá trình gửi thông báo
+        user_states[user_id] = {
+            'state': 'waiting_for_broadcast',
+            'data': {}
+        }
+        
+        bot.edit_message_text(
+            "📣 *Gửi thông báo đến tất cả người dùng*\n\n"
+            "Vui lòng nhập nội dung thông báo bạn muốn gửi.\n"
+            "Bạn có thể sử dụng định dạng Markdown.\n\n"
+            "Gửi /cancel để hủy.",
+            call.message.chat.id,
+            call.message.message_id,
+            parse_mode="Markdown"
+        )
+    
+    # Thêm xử lý cho nút "Thêm tiền" trong menu quản lý người dùng
+    elif data == "add_money" and is_admin(user_id):
+        # Yêu cầu admin nhập ID người dùng
+        user_states[user_id] = {
+            'state': 'waiting_for_user_id_to_add_money',
+            'data': {}
+        }
+        
+        bot.edit_message_text(
+            "💰 *Thêm tiền cho người dùng*\n\n"
+            "Vui lòng nhập ID người dùng:",
+            call.message.chat.id,
+            call.message.message_id,
+            parse_mode="Markdown"
+        )
+    
+    # Thêm xử lý cho nút xem chi tiết người dùng
+    elif data.startswith("view_user_") and is_admin(user_id):
+        # Xem chi tiết người dùng
+        target_user_id = int(data.split("_")[2])
+        target_user = db.get_user(target_user_id)
+        
+        if target_user:
+            # Hiển thị thông tin người dùng
+            purchases = target_user.get('purchases', [])
+            purchase_count = len(purchases)
+            total_spent = sum(p.get('price', 0) for p in purchases)
+            
+            user_info = (
+                f"👤 *Thông tin người dùng*\n\n"
+                f"ID: `{target_user['id']}`\n"
+                f"Username: @{target_user.get('username', 'Không có')}\n"
+                f"Số dư: {target_user.get('balance', 0):,} {config.CURRENCY}\n"
+                f"Trạng thái: {'🚫 Bị cấm' if target_user.get('banned', False) else '✅ Hoạt động'}\n"
+                f"Ngày tham gia: {target_user.get('created_at', 'Không rõ').split('T')[0]}\n"
+                f"Tổng đơn hàng: {purchase_count}\n"
+                f"Tổng chi tiêu: {total_spent:,} {config.CURRENCY}"
+            )
+            
+            bot.edit_message_text(
+                user_info,
+                call.message.chat.id,
+                call.message.message_id,
+                parse_mode="Markdown",
+                reply_markup=keyboards.user_detail_keyboard(target_user_id)
+            )
+    
+    elif data == "add_admin" and is_admin(user_id):
+        # Yêu cầu admin nhập ID người dùng để thêm làm admin
+        user_states[user_id] = {
+            'state': 'waiting_for_admin_id',
+            'data': {}
+        }
+        
+        bot.edit_message_text(
+            "👑 *Thêm quản trị viên mới*\n\n"
+            "Vui lòng nhập ID người dùng bạn muốn thêm làm quản trị viên:",
+            call.message.chat.id,
+            call.message.message_id,
+            parse_mode="Markdown"
+        )
+    
     # Đánh dấu callback đã được xử lý
     bot.answer_callback_query(call.id)
+
+def add_admin_command(bot: TeleBot, message: Message) -> None:
+    """Xử lý lệnh /add_admin - Thêm admin mới"""
+    user_id = message.from_user.id
+    username = message.from_user.username or f"user_{user_id}"
+    
+    logger.info(f"Admin {username} (ID: {user_id}) started add_admin process")
+    
+    # Phân tích cú pháp lệnh
+    args = message.text.split()
+    
+    if len(args) < 2:
+        bot.send_message(
+            user_id,
+            "❌ Sử dụng sai cú pháp. Vui lòng sử dụng: /add_admin [user_id]\n"
+            "Ví dụ: /add_admin 123456789"
+        )
+        return
+    
+    try:
+        new_admin_id = int(args[1])
+    except ValueError:
+        bot.send_message(user_id, "❌ ID người dùng phải là một số.")
+        return
+    
+    # Kiểm tra xem người dùng đã là admin chưa
+    if is_admin(new_admin_id):
+        bot.send_message(user_id, "❌ Người dùng này đã là admin.")
+        return
+    
+    # Kiểm tra xem người dùng có tồn tại không
+    new_admin = db.get_user(new_admin_id)
+    if not new_admin:
+        bot.send_message(user_id, "❌ Không tìm thấy người dùng với ID này.")
+        return
+    
+    # Thêm người dùng vào danh sách admin
+    admin_ids = config.ADMIN_IDS.copy()
+    admin_ids.append(new_admin_id)
+    
+    # Cập nhật file config.py
+    try:
+        with open('config.py', 'r', encoding='utf-8') as file:
+            config_content = file.read()
+        
+        # Tìm và thay thế dòng ADMIN_IDS
+        import re
+        new_admin_line = f"ADMIN_IDS = {str(admin_ids)}"
+        config_content = re.sub(r'ADMIN_IDS = \[.*?\]', new_admin_line, config_content, flags=re.DOTALL)
+        
+        with open('config.py', 'w', encoding='utf-8') as file:
+            file.write(config_content)
+        
+        # Cập nhật biến ADMIN_IDS trong config
+        config.ADMIN_IDS = admin_ids
+        
+        bot.send_message(
+            user_id,
+            f"✅ Đã thêm người dùng ID: {new_admin_id} (@{new_admin.get('username', 'Không có')}) làm admin thành công!\n\n"
+            f"⚠️ Lưu ý: Bạn cần khởi động lại bot để áp dụng thay đổi."
+        )
+        
+        # Thông báo cho người dùng mới được thêm làm admin
+        try:
+            bot.send_message(
+                new_admin_id,
+                "🎉 Chúc mừng! Bạn đã được thêm làm quản trị viên của bot.\n"
+                "Sử dụng /help để xem các lệnh quản trị viên."
+            )
+        except Exception as e:
+            logger.error(f"Không thể gửi thông báo đến người dùng {new_admin_id}: {e}")
+        
+    except Exception as e:
+        logger.error(f"Lỗi khi cập nhật file config.py: {e}")
+        bot.send_message(
+            user_id,
+            "❌ Đã xảy ra lỗi khi thêm admin. Vui lòng thử lại sau hoặc thêm thủ công vào file config.py."
+        )
