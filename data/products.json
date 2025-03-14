@@ -1,0 +1,37 @@
+[
+    {
+        "id": 1,
+        "name": "Netflix Premium",
+        "price": 50000,
+        "is_free": false,
+        "description": "Tài khoản Netflix Premium - Xem phim không giới hạn"
+    },
+    {
+        "id": 2,
+        "name": "Spotify Premium",
+        "price": 30000,
+        "is_free": false,
+        "description": "Tài khoản Spotify Premium - Nghe nhạc không quảng cáo"
+    },
+    {
+        "id": 3,
+        "name": "Youtube Premium",
+        "price": 40000,
+        "is_free": false,
+        "description": "Tài khoản Youtube Premium - Xem video không quảng cáo"
+    },
+    {
+        "id": 4,
+        "name": "Canva Pro",
+        "price": 35000,
+        "is_free": false,
+        "description": "Tài khoản Canva Pro - Thiết kế chuyên nghiệp"
+    },
+    {
+        "id": 5,
+        "name": "Gmail Free",
+        "price": 0,
+        "is_free": true,
+        "description": "Tài khoản Gmail miễn phí"
+    }
+] 

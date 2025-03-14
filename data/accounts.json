@@ -1,0 +1,42 @@
+[
+    {
+        "product_id": 1,
+        "data": "netflix_user1@example.com:password123",
+        "sold": false
+    },
+    {
+        "product_id": 1,
+        "data": "netflix_user2@example.com:password456",
+        "sold": false
+    },
+    {
+        "product_id": 2,
+        "data": "spotify_user1@example.com:spotifypass1",
+        "sold": false
+    },
+    {
+        "product_id": 2,
+        "data": "spotify_user2@example.com:spotifypass2",
+        "sold": false
+    },
+    {
+        "product_id": 3,
+        "data": "youtube_user1@example.com:youtubepass1",
+        "sold": false
+    },
+    {
+        "product_id": 4,
+        "data": "canva_user1@example.com:canvapass1",
+        "sold": false
+    },
+    {
+        "product_id": 5,
+        "data": "gmail_free1@example.com:gmailpass1",
+        "sold": true
+    },
+    {
+        "product_id": 5,
+        "data": "gmail_free2@example.com:gmailpass2",
+        "sold": false
+    }
+]
