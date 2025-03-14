@@ -155,7 +155,7 @@ def product_detail_keyboard(product_id: int, is_admin: bool = False) -> InlineKe
             InlineKeyboardButton("🗑️ Xóa", callback_data=f"delete_product_{product_id}")
         )
         markup.row(
-            InlineKeyboardButton("📤 Upload tài khoản", callback_data=f"upload_product_{product_id}")
+            InlineKeyboardButton("📤 Upload tài khoản", callback_data=f"upload_accounts_{product_id}")
         )
     else:
         markup.row(

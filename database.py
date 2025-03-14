@@ -106,10 +106,26 @@ class Database:
         """Tạo sản phẩm mới hoặc cập nhật sản phẩm hiện có"""
         products = self._read_data(config.PRODUCTS_FILE)
         
+        # Đảm bảo các trường cần thiết
+        if 'name' not in product_data or 'price' not in product_data:
+            raise ValueError("Sản phẩm phải có tên và giá")
+        
+        # Thêm trường is_free dựa trên giá
+        product_data['is_free'] = product_data['price'] <= 0
+        
+        # Nếu không có mô tả, thêm mô tả mặc định
+        if 'description' not in product_data:
+            product_data['description'] = f"Sản phẩm: {product_data['name']}"
+        
         # Nếu có ID và sản phẩm tồn tại, cập nhật
         if 'id' in product_data:
             for i, product in enumerate(products):
                 if product.get('id') == product_data['id']:
+                    # Giữ lại các trường khác nếu không được cung cấp
+                    for key in product:
+                        if key not in product_data:
+                            product_data[key] = product[key]
+                    
                     products[i] = product_data
                     self._write_data(config.PRODUCTS_FILE, products)
                     return product_data['id']
@@ -136,6 +152,14 @@ class Database:
         return False
     
     # === Account methods ===
+    def get_accounts(self) -> List[Dict[str, Any]]:
+        """Lấy tất cả tài khoản"""
+        return self._read_data(config.ACCOUNTS_FILE)
+    
+    def save_accounts(self, accounts: List[Dict[str, Any]]) -> None:
+        """Lưu danh sách tài khoản"""
+        self._write_data(config.ACCOUNTS_FILE, accounts)
+    
     def add_accounts(self, product_id: int, accounts: List[str]) -> int:
         """Thêm tài khoản cho sản phẩm"""
         all_accounts = self._read_data(config.ACCOUNTS_FILE)
@@ -171,4 +195,14 @@ class Database:
         for account in accounts:
             if account.get('product_id') == product_id and not account.get('sold', False):
                 count += 1
-        return count 
+        return count
+    
+    def mark_account_sold(self, account_data: str) -> bool:
+        """Đánh dấu tài khoản đã bán"""
+        accounts = self._read_data(config.ACCOUNTS_FILE)
+        for account in accounts:
+            if account['data'] == account_data and not account['sold']:
+                account['sold'] = True
+                self._write_data(config.ACCOUNTS_FILE, accounts)
+                return True
+        return False 

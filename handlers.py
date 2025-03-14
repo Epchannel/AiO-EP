@@ -71,6 +71,15 @@ def start_command(bot: TeleBot, message: Message) -> None:
         }
         db.add_user(user_data)
         user = user_data
+        
+        # Thông báo cho admin về người dùng mới
+        admin_notification = (
+            f"👤 *Người dùng mới tham gia!*\n\n"
+            f"ID: `{user_id}`\n"
+            f"Username: @{username}\n"
+            f"Thời gian: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        )
+        notify_admins(bot, admin_notification, parse_mode="Markdown")
     
     # Kiểm tra xem người dùng có bị cấm không
     if user and user.get('banned', False):
@@ -444,7 +453,10 @@ def handle_state(bot: TeleBot, message: Message) -> None:
     
     logger.info(f"User {username} (ID: {user_id}) sent message in state {user_states.get(user_id, {}).get('state')}: {text}")
     
-    state = user_states.get(user_id, {}).get('state')
+    if user_id not in user_states:
+        return
+    
+    state = user_states[user_id]['state']
     
     # Kiểm tra lệnh hủy
     if text == '/cancel':
@@ -453,14 +465,155 @@ def handle_state(bot: TeleBot, message: Message) -> None:
         return
     
     # Xử lý các trạng thái
-    if state == 'waiting_for_accounts':
-        product_id = user_states[user_id]['product_id']
+    if state == 'waiting_for_product_name':
+        # Lưu tên sản phẩm và chuyển sang trạng thái chờ giá
+        user_states[user_id]['data']['name'] = text
+        user_states[user_id]['state'] = 'waiting_for_product_price'
         
-        # Xử lý danh sách tài khoản
-        accounts = [line.strip() for line in text.split('\n') if line.strip()]
+        bot.send_message(
+            user_id,
+            f"👍 Đã lưu tên sản phẩm: *{text}*\n\n"
+            f"Vui lòng nhập giá cho sản phẩm (số):",
+            parse_mode="Markdown"
+        )
+    
+    elif state == 'waiting_for_product_price':
+        # Xử lý giá sản phẩm
+        try:
+            price = float(text)
+            if price < 0:
+                bot.send_message(user_id, "❌ Giá sản phẩm không thể âm.")
+                return
+        except ValueError:
+            bot.send_message(user_id, "❌ Giá sản phẩm phải là một số.")
+            return
+        
+        # Lấy dữ liệu sản phẩm
+        product_name = user_states[user_id]['data']['name']
+        
+        # Chuyển sang trạng thái chờ mô tả
+        user_states[user_id]['data']['price'] = price
+        user_states[user_id]['state'] = 'waiting_for_product_description'
+        
+        bot.send_message(
+            user_id,
+            f"👍 Đã lưu giá sản phẩm: *{price:,}* {config.CURRENCY}\n\n"
+            f"Vui lòng nhập mô tả cho sản phẩm:",
+            parse_mode="Markdown"
+        )
+    
+    elif state == 'waiting_for_product_description':
+        # Xử lý mô tả sản phẩm
+        product_data = user_states[user_id]['data']
+        product_data['description'] = text
+        
+        # Tạo sản phẩm mới
+        new_id = db.create_product(product_data)
+        
+        # Xóa trạng thái
+        del user_states[user_id]
+        
+        bot.send_message(
+            user_id,
+            f"✅ Đã tạo sản phẩm mới thành công!\n\n"
+            f"ID: {new_id}\n"
+            f"Tên: {product_data['name']}\n"
+            f"Giá: {product_data['price']:,} {config.CURRENCY}\n"
+            f"Mô tả: {text}",
+            reply_markup=keyboards.back_button("back_to_product_list")
+        )
+    
+    elif state == 'edit_product_name':
+        # Xử lý tên sản phẩm mới
+        product_id = user_states[user_id]['product_id']
+        product_data = user_states[user_id]['data']
+        
+        if text.lower() != 'giữ nguyên':
+            product_data['name'] = text
+        
+        # Chuyển sang trạng thái chỉnh sửa giá
+        user_states[user_id]['state'] = 'edit_product_price'
+        
+        bot.send_message(
+            user_id,
+            f"👍 Tên sản phẩm: *{product_data['name']}*\n\n"
+            f"Vui lòng nhập giá mới cho sản phẩm (hoặc gõ 'giữ nguyên' để không thay đổi):",
+            parse_mode="Markdown"
+        )
+    
+    elif state == 'edit_product_price':
+        # Xử lý giá sản phẩm mới
+        product_id = user_states[user_id]['product_id']
+        product_data = user_states[user_id]['data']
+        
+        if text.lower() != 'giữ nguyên':
+            try:
+                price = float(text)
+                if price < 0:
+                    bot.send_message(user_id, "❌ Giá sản phẩm không thể âm.")
+                    return
+                product_data['price'] = price
+            except ValueError:
+                bot.send_message(user_id, "❌ Giá sản phẩm phải là một số. Vui lòng nhập lại.")
+                return
+        
+        # Chuyển sang trạng thái chỉnh sửa mô tả
+        user_states[user_id]['state'] = 'edit_product_description'
+        
+        bot.send_message(
+            user_id,
+            f"👍 Giá sản phẩm: *{product_data['price']:,}* {config.CURRENCY}\n\n"
+            f"Vui lòng nhập mô tả mới cho sản phẩm (hoặc gõ 'giữ nguyên' để không thay đổi):",
+            parse_mode="Markdown"
+        )
+    
+    elif state == 'edit_product_description':
+        # Xử lý mô tả sản phẩm mới
+        product_id = user_states[user_id]['product_id']
+        product_data = user_states[user_id]['data']
+        
+        if text.lower() != 'giữ nguyên':
+            product_data['description'] = text
+        
+        # Cập nhật sản phẩm trong cơ sở dữ liệu
+        try:
+            db.create_product(product_data)
+            
+            # Xóa trạng thái
+            del user_states[user_id]
+            
+            bot.send_message(
+                user_id,
+                f"✅ Đã cập nhật sản phẩm thành công!\n\n"
+                f"ID: {product_id}\n"
+                f"Tên: {product_data['name']}\n"
+                f"Giá: {product_data['price']:,} {config.CURRENCY}\n"
+                f"Mô tả: {product_data.get('description', 'Không có')}",
+                reply_markup=keyboards.back_button("back_to_product_list")
+            )
+        except Exception as e:
+            logger.error(f"Lỗi khi cập nhật sản phẩm: {e}")
+            bot.send_message(
+                user_id,
+                "❌ Đã xảy ra lỗi khi cập nhật sản phẩm. Vui lòng thử lại sau."
+            )
+    
+    elif state == 'waiting_for_accounts':
+        # Xử lý upload tài khoản
+        product_id = user_states[user_id]['product_id']
+        product = db.get_product(product_id)
+        
+        if not product:
+            bot.send_message(user_id, "❌ Sản phẩm không tồn tại.")
+            del user_states[user_id]
+            return
+        
+        # Phân tích danh sách tài khoản
+        accounts = text.strip().split('\n')
+        accounts = [account.strip() for account in accounts if account.strip()]
         
         if not accounts:
-            bot.send_message(user_id, "❌ Không tìm thấy tài khoản nào. Vui lòng thử lại.")
+            bot.send_message(user_id, "❌ Danh sách tài khoản không hợp lệ.")
             return
         
         # Thêm tài khoản vào cơ sở dữ liệu
@@ -469,305 +622,13 @@ def handle_state(bot: TeleBot, message: Message) -> None:
         # Xóa trạng thái
         del user_states[user_id]
         
-        product = db.get_product(product_id)
         bot.send_message(
             user_id,
-            f"✅ Đã thêm {count} tài khoản cho sản phẩm *{product['name']}*.",
+            f"✅ Đã thêm {count} tài khoản cho sản phẩm *{product['name']}* thành công!",
             parse_mode="Markdown"
         )
     
-    elif state == 'waiting_for_add_money' and is_admin(user_id):
-        # Xử lý thêm tiền cho người dùng
-        target_user_id = user_states[user_id]['target_user_id']
-        
-        try:
-            amount = float(text)
-            if amount <= 0:
-                bot.send_message(user_id, "❌ Số tiền phải lớn hơn 0.")
-                return
-        except ValueError:
-            bot.send_message(user_id, "❌ Số tiền không hợp lệ. Vui lòng nhập một số.")
-            return
-        
-        # Xóa trạng thái
-        del user_states[user_id]
-        
-        # Thêm tiền cho người dùng
-        target_user = db.get_user(target_user_id)
-        if target_user:
-            new_balance = target_user.get('balance', 0) + amount
-            db.update_user(target_user_id, {'balance': new_balance})
-            
-            bot.send_message(
-                user_id,
-                f"✅ Đã thêm {amount:,} {config.CURRENCY} cho người dùng thành công!\n\n"
-                f"ID: {target_user['id']}\n"
-                f"Username: @{target_user.get('username', 'Không có')}\n"
-                f"Số dư mới: {new_balance:,} {config.CURRENCY}"
-            )
-            
-            # Thông báo cho người dùng
-            try:
-                bot.send_message(
-                    target_user_id,
-                    f"💰 Tài khoản của bạn vừa được cộng {amount:,} {config.CURRENCY}.\n"
-                    f"Số dư hiện tại: {new_balance:,} {config.CURRENCY}"
-                )
-            except Exception as e:
-                logger.error(f"Không thể gửi thông báo đến người dùng {target_user_id}: {e}")
-        else:
-            bot.send_message(user_id, "❌ Không thể thêm tiền cho người dùng này.")
-    
-    elif state == 'waiting_for_product_name':
-        # Lưu tên sản phẩm và chuyển sang trạng thái chờ giá
-        user_states[user_id]['product_name'] = text
-        user_states[user_id]['state'] = 'waiting_for_product_price'
-        
-        bot.send_message(
-            user_id,
-            f"📝 Tên sản phẩm: *{text}*\n\nVui lòng nhập giá sản phẩm (số):",
-            parse_mode="Markdown"
-        )
-    
-    elif state == 'waiting_for_product_price':
-        try:
-            price = float(text)
-        except ValueError:
-            bot.send_message(user_id, "❌ Giá phải là một số. Vui lòng thử lại.")
-            return
-        
-        product_name = user_states[user_id]['product_name']
-        
-        # Tạo sản phẩm mới
-        product_data = {
-            'name': product_name,
-            'price': price,
-            'is_free': price <= 0,
-            'description': f"Sản phẩm: {product_name}"
-        }
-        
-        # Nếu đang chỉnh sửa sản phẩm
-        if 'edit_product_id' in user_states[user_id]:
-            product_data['id'] = user_states[user_id]['edit_product_id']
-        
-        product_id = db.create_product(product_data)
-        
-        # Xóa trạng thái
-        del user_states[user_id]
-        
-        bot.send_message(
-            user_id,
-            f"✅ Đã {'cập nhật' if 'edit_product_id' in user_states.get(user_id, {}) else 'tạo'} sản phẩm thành công!\n\n"
-            f"ID: {product_id}\n"
-            f"Tên: {product_name}\n"
-            f"Giá: {price:,} {config.CURRENCY}\n"
-            f"Loại: {'Miễn phí' if price <= 0 else 'Trả phí'}"
-        )
-    
-    elif state == 'waiting_for_user_id':
-        try:
-            target_user_id = int(text)
-        except ValueError:
-            bot.send_message(user_id, "❌ ID người dùng phải là một số. Vui lòng thử lại.")
-            return
-        
-        # Kiểm tra người dùng tồn tại
-        target_user = db.get_user(target_user_id)
-        if not target_user:
-            bot.send_message(user_id, f"❌ Không tìm thấy người dùng với ID {target_user_id}.")
-            return
-        
-        # Lưu ID người dùng và chuyển sang trạng thái chờ số tiền
-        user_states[user_id]['target_user_id'] = target_user_id
-        user_states[user_id]['state'] = 'waiting_for_amount'
-        
-        bot.send_message(
-            user_id,
-            f"👤 Người dùng: {target_user.get('username', target_user_id)}\n\n"
-            f"Vui lòng nhập số tiền muốn thêm (số):"
-        )
-    
-    elif state == 'waiting_for_amount':
-        try:
-            amount = float(text)
-        except ValueError:
-            bot.send_message(user_id, "❌ Số tiền phải là một số. Vui lòng thử lại.")
-            return
-        
-        if amount <= 0:
-            bot.send_message(user_id, "❌ Số tiền phải lớn hơn 0. Vui lòng thử lại.")
-            return
-        
-        target_user_id = user_states[user_id]['target_user_id']
-        
-        # Thêm tiền cho người dùng
-        success = db.add_money(target_user_id, amount)
-        
-        # Xóa trạng thái
-        del user_states[user_id]
-        
-        if success:
-            target_user = db.get_user(target_user_id)
-            new_balance = target_user.get('balance', 0)
-            
-            bot.send_message(
-                user_id,
-                f"✅ Đã thêm {amount:,} {config.CURRENCY} cho người dùng {target_user.get('username', target_user_id)}.\n"
-                f"Số dư mới: {new_balance:,} {config.CURRENCY}"
-            )
-            
-            # Thông báo cho người dùng
-            bot.send_message(
-                target_user_id,
-                f"💰 Tài khoản của bạn vừa được cộng {amount:,} {config.CURRENCY}.\n"
-                f"Số dư hiện tại: {new_balance:,} {config.CURRENCY}"
-            )
-        else:
-            bot.send_message(user_id, "❌ Không thể thêm tiền cho người dùng này.")
-    
-    elif state == 'waiting_for_broadcast' and is_admin(user_id):
-        # Xử lý gửi thông báo đến tất cả người dùng
-        broadcast_message = text
-        
-        # Xóa trạng thái
-        del user_states[user_id]
-        
-        # Lấy danh sách tất cả người dùng
-        users = db.get_all_users()
-        success_count = 0
-        fail_count = 0
-        
-        # Gửi tin nhắn xác nhận trước
-        confirm_msg = bot.send_message(
-            user_id,
-            f"🔄 Đang gửi thông báo đến {len(users)} người dùng...",
-        )
-        
-        # Gửi thông báo đến từng người dùng
-        for user in users:
-            try:
-                # Bỏ qua người dùng bị cấm
-                if user.get('banned', False):
-                    continue
-                
-                # Gửi thông báo
-                bot.send_message(
-                    user['id'],
-                    f"📣 *THÔNG BÁO*\n\n{broadcast_message}",
-                    parse_mode="Markdown"
-                )
-                success_count += 1
-                
-                # Tránh bị giới hạn tốc độ của Telegram
-                time.sleep(0.1)
-                
-            except Exception as e:
-                logger.error(f"Không thể gửi thông báo đến người dùng {user.get('id')}: {e}")
-                fail_count += 1
-        
-        # Cập nhật tin nhắn xác nhận
-        bot.edit_message_text(
-            f"✅ Đã gửi thông báo thành công!\n\n"
-            f"📊 Thống kê:\n"
-            f"- Tổng số người dùng: {len(users)}\n"
-            f"- Gửi thành công: {success_count}\n"
-            f"- Gửi thất bại: {fail_count}",
-            user_id,
-            confirm_msg.message_id
-        )
-
-    elif state == 'waiting_for_user_id_to_add_money' and is_admin(user_id):
-        # Xử lý nhập ID người dùng để thêm tiền
-        try:
-            target_user_id = int(text)
-            target_user = db.get_user(target_user_id)
-            
-            if not target_user:
-                bot.send_message(user_id, "❌ Không tìm thấy người dùng với ID này.")
-                return
-            
-            # Cập nhật trạng thái
-            user_states[user_id] = {
-                'state': 'waiting_for_add_money',
-                'target_user_id': target_user_id
-            }
-            
-            bot.send_message(
-                user_id,
-                f"💰 Thêm tiền cho người dùng:\n\n"
-                f"ID: {target_user['id']}\n"
-                f"Username: @{target_user.get('username', 'Không có')}\n"
-                f"Số dư hiện tại: {target_user.get('balance', 0):,} {config.CURRENCY}\n\n"
-                f"Vui lòng nhập số tiền muốn thêm:"
-            )
-            
-        except ValueError:
-            bot.send_message(user_id, "❌ ID người dùng không hợp lệ. Vui lòng nhập một số.")
-
-    elif state == 'waiting_for_admin_id' and is_admin(user_id):
-        # Xử lý thêm admin mới
-        try:
-            new_admin_id = int(text)
-        except ValueError:
-            bot.send_message(user_id, "❌ ID người dùng phải là một số.")
-            return
-        
-        # Kiểm tra xem người dùng đã là admin chưa
-        if is_admin(new_admin_id):
-            bot.send_message(user_id, "❌ Người dùng này đã là admin.")
-            return
-        
-        # Kiểm tra xem người dùng có tồn tại không
-        new_admin = db.get_user(new_admin_id)
-        if not new_admin:
-            bot.send_message(user_id, "❌ Không tìm thấy người dùng với ID này.")
-            return
-        
-        # Xóa trạng thái
-        del user_states[user_id]
-        
-        # Thêm người dùng vào danh sách admin
-        admin_ids = config.ADMIN_IDS.copy()
-        admin_ids.append(new_admin_id)
-        
-        # Cập nhật file config.py
-        try:
-            with open('config.py', 'r', encoding='utf-8') as file:
-                config_content = file.read()
-            
-            # Tìm và thay thế dòng ADMIN_IDS
-            import re
-            new_admin_line = f"ADMIN_IDS = {str(admin_ids)}"
-            config_content = re.sub(r'ADMIN_IDS = \[.*?\]', new_admin_line, config_content, flags=re.DOTALL)
-            
-            with open('config.py', 'w', encoding='utf-8') as file:
-                file.write(config_content)
-            
-            # Cập nhật biến ADMIN_IDS trong config
-            config.ADMIN_IDS = admin_ids
-            
-            bot.send_message(
-                user_id,
-                f"✅ Đã thêm người dùng ID: {new_admin_id} (@{new_admin.get('username', 'Không có')}) làm admin thành công!\n\n"
-                f"⚠️ Lưu ý: Bạn cần khởi động lại bot để áp dụng thay đổi."
-            )
-            
-            # Thông báo cho người dùng mới được thêm làm admin
-            try:
-                bot.send_message(
-                    new_admin_id,
-                    "🎉 Chúc mừng! Bạn đã được thêm làm quản trị viên của bot.\n"
-                    "Sử dụng /help để xem các lệnh quản trị viên."
-                )
-            except Exception as e:
-                logger.error(f"Không thể gửi thông báo đến người dùng {new_admin_id}: {e}")
-            
-        except Exception as e:
-            logger.error(f"Lỗi khi cập nhật file config.py: {e}")
-            bot.send_message(
-                user_id,
-                "❌ Đã xảy ra lỗi khi thêm admin. Vui lòng thử lại sau hoặc thêm thủ công vào file config.py."
-            )
+    # Thêm các trạng thái khác ở đây
 
 def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
     """Xử lý các callback query từ bàn phím inline"""
@@ -819,7 +680,7 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
             'revenue': revenue
         }
     
-    def process_purchase(user_id, product_id):
+    def process_purchase(user_id: int, product_id: int) -> dict:
         """Xử lý mua hàng"""
         user = db.get_user(user_id)
         product = db.get_product(product_id)
@@ -828,41 +689,49 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
             return {'success': False, 'message': 'Sản phẩm không tồn tại'}
         
         # Kiểm tra số lượng tài khoản còn lại
-        available_accounts = db.count_available_accounts(product_id)
-        if available_accounts <= 0:
+        available_account = db.get_available_account(product_id)
+        if not available_account:
             return {'success': False, 'message': 'Sản phẩm đã hết hàng'}
         
         # Kiểm tra số dư
-        if product.get('price', 0) > 0:  # Nếu là sản phẩm trả phí
-            if user.get('balance', 0) < product.get('price', 0):
+        price = product.get('price', 0)
+        if price > 0:  # Nếu là sản phẩm trả phí
+            if user.get('balance', 0) < price:
                 return {'success': False, 'message': 'Số dư không đủ'}
             
             # Trừ tiền
-            new_balance = user.get('balance', 0) - product.get('price', 0)
+            new_balance = user.get('balance', 0) - price
             db.update_user(user_id, {'balance': new_balance})
+        else:
+            new_balance = user.get('balance', 0)
         
-        # Lấy tài khoản
-        account = db.get_available_account(product_id)
-        if not account:
-            return {'success': False, 'message': 'Không thể lấy tài khoản'}
+        # Đánh dấu tài khoản đã bán
+        accounts = db.get_accounts()
+        for account in accounts:
+            if account['data'] == available_account['data'] and not account['sold']:
+                account['sold'] = True
+                db.save_accounts(accounts)
+                break
         
-        # Cập nhật lịch sử mua hàng
-        purchase = {
+        # Thêm vào lịch sử mua hàng
+        purchase_data = {
             'product_id': product_id,
             'product_name': product.get('name', ''),
-            'price': product.get('price', 0),
-            'account_data': account.get('data', ''),
+            'price': price,
+            'account_data': available_account.get('data', ''),
             'purchased_at': datetime.datetime.now().isoformat()
         }
         
         purchases = user.get('purchases', [])
-        purchases.append(purchase)
+        purchases.append(purchase_data)
         db.update_user(user_id, {'purchases': purchases})
         
         return {
             'success': True,
             'product_name': product.get('name', ''),
-            'account_info': account.get('data', '')
+            'price': price,
+            'new_balance': new_balance,
+            'account_info': available_account.get('data', '')
         }
     
     # Xử lý các callback data
@@ -1071,22 +940,34 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
             )
     
     elif data.startswith("confirm_purchase_"):
-        # Xác nhận mua hàng
+        # Xử lý xác nhận mua hàng
         product_id = int(data.split("_")[2])
         result = process_purchase(user_id, product_id)
         
         if result['success']:
             bot.edit_message_text(
-                f"✅ Mua hàng thành công!\n\n"
-                f"Sản phẩm: {result['product_name']}\n"
-                f"Thông tin tài khoản:\n"
-                f"```\n{result['account_info']}\n```\n\n"
-                f"Cảm ơn bạn đã mua hàng!",
+                f"✅ *Mua hàng thành công!*\n\n"
+                f"🏷️ Sản phẩm: {result['product_name']}\n"
+                f"💰 Giá: {result['price']:,} {config.CURRENCY}\n"
+                f"💳 Số dư còn lại: {result['new_balance']:,} {config.CURRENCY}\n\n"
+                f"📝 Thông tin tài khoản:\n`{result['account_info']}`\n\n"
+                f"_Vui lòng lưu lại thông tin tài khoản._",
                 call.message.chat.id,
                 call.message.message_id,
-                parse_mode="Markdown",
-                reply_markup=keyboards.back_button()
+                parse_mode="Markdown"
             )
+            
+            # Thông báo cho admin về giao dịch mới
+            admin_notification = (
+                f"💰 *Giao dịch mới!*\n\n"
+                f"👤 Người mua:\n"
+                f"- ID: `{user_id}`\n"
+                f"- Username: @{user.get('username', 'Không có')}\n\n"
+                f"🏷️ Sản phẩm: {result['product_name']}\n"
+                f"💵 Giá: {result['price']:,} {config.CURRENCY}\n"
+                f"⏰ Thời gian: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            )
+            notify_admins(bot, admin_notification, parse_mode="Markdown")
         else:
             bot.edit_message_text(
                 f"❌ Mua hàng thất bại: {result['message']}",
@@ -1261,13 +1142,14 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
             }
             
             bot.edit_message_text(
-                f"📤 Upload tài khoản cho sản phẩm:\n\n"
+                f"📤 *Upload tài khoản cho sản phẩm*\n\n"
                 f"ID: {product['id']}\n"
                 f"Tên: {product['name']}\n\n"
                 f"Vui lòng nhập danh sách tài khoản, mỗi tài khoản một dòng.\n"
                 f"Định dạng: username:password hoặc email:password",
                 call.message.chat.id,
-                call.message.message_id
+                call.message.message_id,
+                parse_mode="Markdown"
             )
     
     elif data == "broadcast" and is_admin(user_id):
@@ -1349,6 +1231,52 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
             parse_mode="Markdown"
         )
     
+    # Sửa phần xử lý nút edit_product trong hàm handle_callback_query
+    elif data.startswith("edit_product_") and is_admin(user_id):
+        # Lấy ID sản phẩm
+        product_id = int(data.split("_")[2])
+        product = db.get_product(product_id)
+        
+        if product:
+            # Lưu trạng thái để chỉnh sửa sản phẩm
+            user_states[user_id] = {
+                'state': 'edit_product_name',
+                'product_id': product_id,
+                'data': {
+                    'id': product_id,
+                    'name': product.get('name', ''),
+                    'price': product.get('price', 0),
+                    'description': product.get('description', '')
+                }
+            }
+            
+            bot.edit_message_text(
+                f"✏️ *Chỉnh sửa sản phẩm*\n\n"
+                f"ID: {product['id']}\n"
+                f"Tên hiện tại: {product['name']}\n"
+                f"Giá hiện tại: {product['price']:,} {config.CURRENCY}\n"
+                f"Mô tả hiện tại: {product.get('description', 'Không có')}\n\n"
+                f"Vui lòng nhập tên mới cho sản phẩm (hoặc gõ 'giữ nguyên' để không thay đổi):",
+                call.message.chat.id,
+                call.message.message_id,
+                parse_mode="Markdown"
+            )
+    
+    elif data == "create_product" and is_admin(user_id):
+        # Bắt đầu quá trình tạo sản phẩm mới
+        user_states[user_id] = {
+            'state': 'waiting_for_product_name',
+            'data': {}
+        }
+        
+        bot.edit_message_text(
+            "➕ *Tạo sản phẩm mới*\n\n"
+            "Vui lòng nhập tên sản phẩm:",
+            call.message.chat.id,
+            call.message.message_id,
+            parse_mode="Markdown"
+        )
+    
     # Đánh dấu callback đã được xử lý
     bot.answer_callback_query(call.id)
 
@@ -1422,10 +1350,19 @@ def add_admin_command(bot: TeleBot, message: Message) -> None:
             )
         except Exception as e:
             logger.error(f"Không thể gửi thông báo đến người dùng {new_admin_id}: {e}")
-        
+            
     except Exception as e:
         logger.error(f"Lỗi khi cập nhật file config.py: {e}")
         bot.send_message(
             user_id,
             "❌ Đã xảy ra lỗi khi thêm admin. Vui lòng thử lại sau hoặc thêm thủ công vào file config.py."
         )
+
+# Thêm hàm tiện ích để gửi thông báo cho tất cả admin
+def notify_admins(bot: TeleBot, message: str, parse_mode: str = None) -> None:
+    """Gửi thông báo đến tất cả admin"""
+    for admin_id in config.ADMIN_IDS:
+        try:
+            bot.send_message(admin_id, message, parse_mode=parse_mode)
+        except Exception as e:
+            logger.error(f"Không thể gửi thông báo đến admin {admin_id}: {e}")

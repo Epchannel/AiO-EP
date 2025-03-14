@@ -18,7 +18,7 @@
     {
         "id": 7140814657,
         "username": "ngochacoder",
-        "balance": 50000.0,
+        "balance": 10000.0,
         "banned": false,
         "purchases": [
             {
@@ -27,6 +27,27 @@
                 "price": 0,
                 "account_data": "gmail_free1@example.com:gmailpass1",
                 "purchased_at": "2025-03-14T11:52:56.165129"
+            },
+            {
+                "product_id": 3,
+                "product_name": "Youtube Premium",
+                "price": 40000,
+                "account_data": "youtube_user1@example.com:youtubepass1",
+                "purchased_at": "2025-03-14T14:22:36.148034"
+            },
+            {
+                "product_id": 5,
+                "product_name": "Gmail Free",
+                "price": 0,
+                "account_data": "gmail_free2@example.com:gmailpass2",
+                "purchased_at": "2025-03-14T14:23:12.524832"
+            },
+            {
+                "product_id": 5,
+                "product_name": "Gmail Free",
+                "price": 0,
+                "account_data": "gmail_free22@example.com:gmailpass1",
+                "purchased_at": "2025-03-14T14:34:20.372462"
             }
         ],
         "created_at": "2025-03-14T11:52:41.803885"

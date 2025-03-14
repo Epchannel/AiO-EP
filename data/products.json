@@ -29,9 +29,16 @@
     },
     {
         "id": 5,
-        "name": "Gmail Free",
+        "name": "Gmail miễn phí",
         "price": 0,
-        "is_free": true,
-        "description": "Tài khoản Gmail miễn phí"
+        "description": "Tài khoản Gmail miễn phí",
+        "is_free": true
+    },
+    {
+        "id": 6,
+        "name": "Bithub",
+        "price": 0.0,
+        "description": "Website tạo biopage, rút gọn link, tạo QR, Truyền file,  Chia sẻ danh bạ, Link sự kiện, Host HTML, Web tools",
+        "is_free": true
     }
-] 
+]
