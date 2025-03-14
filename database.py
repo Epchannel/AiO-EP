@@ -205,4 +205,15 @@ class Database:
                 account['sold'] = True
                 self._write_data(config.ACCOUNTS_FILE, accounts)
                 return True
-        return False 
+        return False
+    
+    def get_visibility_settings(self) -> dict:
+        """Lấy cài đặt hiển thị từ cơ sở dữ liệu"""
+        # Đây là ví dụ, bạn cần triển khai theo cơ sở dữ liệu của mình
+        settings = self.get_settings()
+        return settings or {'show_premium': True}  # Giá trị mặc định
+    
+    def update_visibility_setting(self, key: str, value: bool) -> None:
+        """Cập nhật cài đặt hiển thị trong cơ sở dữ liệu"""
+        # Đây là ví dụ, bạn cần triển khai theo cơ sở dữ liệu của mình
+        self.update_setting(key, value) 

@@ -98,7 +98,6 @@ def start_command(bot: TeleBot, message: Message) -> None:
         welcome_text,
         reply_markup=keyboards.main_menu(is_admin(user_id))
     )
-
 def help_command(bot: TeleBot, message: Message) -> None:
     """Xử lý lệnh /help"""
     user_id = message.from_user.id
@@ -631,7 +630,7 @@ def handle_state(bot: TeleBot, message: Message) -> None:
     # Thêm các trạng thái khác ở đây
 
 def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
-    """Xử lý các callback query từ bàn phím inline"""
+    """Xử lý callback query từ các nút inline"""
     user_id = call.from_user.id
     username = call.from_user.username or f"user_{user_id}"
     data = call.data
@@ -640,8 +639,8 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
     
     # Kiểm tra xem người dùng có bị cấm không
     user = db.get_user(user_id)
-    if user and user.get('banned', False) and not is_admin(user_id):
-        bot.answer_callback_query(call.id, "⛔ Tài khoản của bạn đã bị cấm. Vui lòng liên hệ quản trị viên.")
+    if user and user.get('banned', False):
+        bot.answer_callback_query(call.id, "⛔ Tài khoản của bạn đã bị cấm. Vui lòng liên hệ quản trị viên.", show_alert=True)
         return
     
     # Thêm các hàm tiện ích
@@ -687,6 +686,17 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
         
         if not product:
             return {'success': False, 'message': 'Sản phẩm không tồn tại'}
+        
+        # Kiểm tra giới hạn tài khoản miễn phí
+        if product.get('is_free', False):
+            # Kiểm tra xem người dùng đã nhận tài khoản miễn phí của loại này chưa
+            user_purchases = user.get('purchases', [])
+            for purchase in user_purchases:
+                if purchase.get('product_id') == product_id:
+                    return {
+                        'success': False, 
+                        'message': 'Bạn đã nhận tài khoản miễn phí của loại này rồi'
+                    }
         
         # Kiểm tra số lượng tài khoản còn lại
         available_account = db.get_available_account(product_id)
@@ -940,48 +950,57 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
             )
     
     elif data.startswith("confirm_purchase_"):
-        # Xử lý xác nhận mua hàng
+        # Xác nhận mua hàng
         product_id = int(data.split("_")[2])
+        
+        # Xử lý mua hàng
         result = process_purchase(user_id, product_id)
         
         if result['success']:
+            # Gửi thông tin tài khoản cho người dùng
             bot.edit_message_text(
                 f"✅ *Mua hàng thành công!*\n\n"
-                f"🏷️ Sản phẩm: {result['product_name']}\n"
-                f"💰 Giá: {result['price']:,} {config.CURRENCY}\n"
-                f"💳 Số dư còn lại: {result['new_balance']:,} {config.CURRENCY}\n\n"
-                f"📝 Thông tin tài khoản:\n`{result['account_info']}`\n\n"
-                f"_Vui lòng lưu lại thông tin tài khoản._",
+                f"Sản phẩm: {result['product_name']}\n"
+                f"Giá: {result['price']:,} {config.CURRENCY}\n"
+                f"Số dư còn lại: {result['new_balance']:,} {config.CURRENCY}\n\n"
+                f"📝 *Thông tin tài khoản:*\n"
+                f"`{result['account_info']}`\n\n"
+                f"Cảm ơn bạn đã sử dụng dịch vụ!",
                 call.message.chat.id,
                 call.message.message_id,
-                parse_mode="Markdown"
+                parse_mode="Markdown",
+                reply_markup=keyboards.back_button()
             )
             
-            # Thông báo cho admin về giao dịch mới
+            # Gửi thông báo cho admin về giao dịch thành công
             admin_notification = (
-                f"💰 *Giao dịch mới!*\n\n"
-                f"👤 Người mua:\n"
-                f"- ID: `{user_id}`\n"
-                f"- Username: @{user.get('username', 'Không có')}\n\n"
-                f"🏷️ Sản phẩm: {result['product_name']}\n"
-                f"💵 Giá: {result['price']:,} {config.CURRENCY}\n"
-                f"⏰ Thời gian: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+                f"💰 *Giao dịch mới thành công!*\n\n"
+                f"Người dùng: @{username} (ID: `{user_id}`)\n"
+                f"Sản phẩm: {result['product_name']}\n"
+                f"Giá: {result['price']:,} {config.CURRENCY}\n"
+                f"Thời gian: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
             )
             notify_admins(bot, admin_notification, parse_mode="Markdown")
         else:
+            # Hiển thị thông báo lỗi
+            bot.answer_callback_query(call.id, f"❌ {result['message']}", show_alert=True)
+            
+            # Quay lại menu chính
             bot.edit_message_text(
-                f"❌ Mua hàng thất bại: {result['message']}",
+                f"🏠 *Menu chính*\n\nSố dư: {user.get('balance', 0):,} {config.CURRENCY}",
                 call.message.chat.id,
                 call.message.message_id,
-                reply_markup=keyboards.back_button()
+                parse_mode="Markdown",
+                reply_markup=keyboards.main_menu(is_admin(user_id))
             )
     
     # Xử lý các nút quay lại
     elif data == "back_to_main":
         bot.edit_message_text(
-            "🏠 Menu chính",
+            "🏠 *Menu chính*\n\nSố dư: {user.get('balance', 0):,} {config.CURRENCY}",
             call.message.chat.id,
             call.message.message_id,
+            parse_mode="Markdown",
             reply_markup=keyboards.main_menu(is_admin(user_id))
         )
     

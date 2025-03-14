@@ -67,6 +67,36 @@
     {
         "product_id": 6,
         "data": "fiyafik789@excederm.com:fiyafik789@",
+        "sold": true
+    },
+    {
+        "product_id": 6,
+        "data": "levek28115@dmener.com:levek28115@d",
+        "sold": false
+    },
+    {
+        "product_id": 5,
+        "data": "mailtest@gmail.com",
+        "sold": false
+    },
+    {
+        "product_id": 5,
+        "data": "mailtest1@gmail.com",
+        "sold": false
+    },
+    {
+        "product_id": 5,
+        "data": "mailtest2@gmail.com",
+        "sold": false
+    },
+    {
+        "product_id": 5,
+        "data": "mailtest3@gmail.com",
+        "sold": false
+    },
+    {
+        "product_id": 6,
+        "data": "fiyafik789@excederm.com:fiyafik789@",
         "sold": false
     }
 ]
