@@ -1349,7 +1349,7 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
                 call.message.chat.id,
                 call.message.message_id,
                 parse_mode="Markdown",
-                reply_markup=confirm_delete_product_keyboard(product_id)
+                reply_markup=keyboards.confirm_delete_product_keyboard(product_id)
             )
     
     # Thêm xử lý cho nút xác nhận xóa sản phẩm

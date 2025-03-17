@@ -1,5 +1,5 @@
 # Cấu hình bot
-TOKEN = "7261989107:AAH0lxboX0feHsvna4ECHLyNNdSzQRukmiQ"  # Thay thế bằng token thực của bot bạn
+TOKEN = "8045325527:AAGc_PgdTD_F0T7_gP8aD3YrVlhvgQmZFNM"  # Thay thế bằng token thực của bot bạn
 
 # Danh sách ID của admin
 ADMIN_IDS = [

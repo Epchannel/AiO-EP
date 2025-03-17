@@ -1,40 +1,5 @@
 [
     {
-        "id": 1,
-        "name": "Netflix Premium",
-        "price": 50000,
-        "is_free": false,
-        "description": "Tài khoản Netflix Premium - Xem phim không giới hạn"
-    },
-    {
-        "id": 2,
-        "name": "Spotify Premium",
-        "price": 30000,
-        "is_free": false,
-        "description": "Tài khoản Spotify Premium - Nghe nhạc không quảng cáo"
-    },
-    {
-        "id": 3,
-        "name": "Youtube Premium",
-        "price": 40000,
-        "is_free": false,
-        "description": "Tài khoản Youtube Premium - Xem video không quảng cáo"
-    },
-    {
-        "id": 4,
-        "name": "Canva Pro",
-        "price": 35000,
-        "is_free": false,
-        "description": "Tài khoản Canva Pro - Thiết kế chuyên nghiệp"
-    },
-    {
-        "id": 5,
-        "name": "Gmail miễn phí",
-        "price": 0,
-        "description": "Tài khoản Gmail miễn phí",
-        "is_free": true
-    },
-    {
         "id": 6,
         "name": "Bithub",
         "price": 0.0,
@@ -47,5 +12,19 @@
         "price": 99000.0,
         "description": "Kling AI gói Standard 660 credit/1 tháng, không bảo hành",
         "is_free": false
+    },
+    {
+        "name": "Monica Unlimited",
+        "price": 50000.0,
+        "description": "Tài khoản dùng chung Monica Không giới hạn truy cập vào các model: GPT-4o & o1, Claude 3.7 Sonnet, Gemini 2.0 Pro, Llama 3.1 405B...",
+        "is_free": false,
+        "id": 8
+    },
+    {
+        "name": "Semrush Guru",
+        "price": 70000.0,
+        "description": "Semrush là công cụ SEO phổ biến, được dùng để nghiên cứu và phân tích từ khoá, các chủ số SEO, đối thủ cạnh tranh được rất nhiều doanh nghiệp tin dùng",
+        "is_free": false,
+        "id": 9
     }
 ]
