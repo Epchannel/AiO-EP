@@ -26,5 +26,26 @@
         "description": "Semrush là công cụ SEO phổ biến, được dùng để nghiên cứu và phân tích từ khoá, các chủ số SEO, đối thủ cạnh tranh được rất nhiều doanh nghiệp tin dùng",
         "is_free": false,
         "id": 9
+    },
+    {
+        "name": "Duolingo Family",
+        "price": 0.0,
+        "description": "Nền tảng học ngôn ngữ miễn phí phổ biến",
+        "is_free": true,
+        "id": 10
+    },
+    {
+        "name": "Ipvanish",
+        "price": 0.0,
+        "description": "Tài khoản IPVanish VPN cho phép bạn truy cập các trang web và dịch vụ trực tuyến một cách an toàn, ẩn danh và bảo mật",
+        "is_free": true,
+        "id": 11
+    },
+    {
+        "name": "HMA VPN",
+        "price": 0.0,
+        "description": "HMA VPN là một trong những dịch vụ VPN phổ biến với nhiều tính năng ưu việt.",
+        "is_free": true,
+        "id": 12
     }
 ]

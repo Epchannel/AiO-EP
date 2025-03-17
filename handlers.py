@@ -680,71 +680,98 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
             'revenue': revenue
         }
     
-    def process_purchase(user_id: int, product_id: int) -> dict:
-        """Xử lý mua hàng"""
-        user = db.get_user(user_id)
-        product = db.get_product(product_id)
-        
-        if not product:
-            return {'success': False, 'message': 'Sản phẩm không tồn tại'}
-        
-        # Kiểm tra giới hạn tài khoản miễn phí
-        if product.get('is_free', False):
-            # Kiểm tra xem người dùng đã nhận tài khoản miễn phí của loại này chưa
-            user_purchases = user.get('purchases', [])
-            for purchase in user_purchases:
-                if purchase.get('product_id') == product_id:
-                    return {
-                        'success': False, 
-                        'message': 'Bạn đã nhận tài khoản miễn phí của loại này rồi'
-                    }
-        
-        # Kiểm tra số lượng tài khoản còn lại
-        available_account = db.get_available_account(product_id)
-        if not available_account:
-            return {'success': False, 'message': 'Sản phẩm đã hết hàng'}
-        
-        # Kiểm tra số dư
-        price = product.get('price', 0)
-        if price > 0:  # Nếu là sản phẩm trả phí
-            if user.get('balance', 0) < price:
-                return {'success': False, 'message': 'Số dư không đủ'}
+    def process_purchase(user_id, product_id):
+        """Xử lý quá trình mua hàng"""
+        try:
+            user = db.get_user(user_id)
+            if not user:
+                # Tạo user mới nếu không tồn tại
+                user = {
+                    'id': user_id,
+                    'balance': 0,
+                    'purchases': [],
+                    'banned': False
+                }
+                db.add_user(user)
+            
+            product = db.get_product(product_id)
+            if not product:
+                return {
+                    'success': False,
+                    'message': 'Sản phẩm không tồn tại.'
+                }
+            
+            # Kiểm tra số lượng tài khoản còn lại
+            available_accounts = db.count_available_accounts(product_id)
+            if available_accounts <= 0:
+                return {
+                    'success': False,
+                    'message': 'Sản phẩm đã hết hàng.'
+                }
+            
+            # Kiểm tra nếu là sản phẩm miễn phí, người dùng chỉ được nhận 1 lần
+            if product.get('is_free', False):
+                user_purchases = user.get('purchases', [])
+                for purchase in user_purchases:
+                    if purchase.get('product_id') == product_id:
+                        return {
+                            'success': False,
+                            'message': 'Bạn đã nhận sản phẩm miễn phí này rồi. Mỗi người chỉ được nhận 1 lần.'
+                        }
+            
+            # Kiểm tra số dư
+            user_balance = user.get('balance', 0)
+            product_price = product.get('price', 0)
+            
+            if product_price > 0 and user_balance < product_price:
+                return {
+                    'success': False,
+                    'message': f'Số dư không đủ. Bạn cần thêm {product_price - user_balance:,} {config.CURRENCY}.'
+                }
+            
+            # Lấy một tài khoản
+            account = db.get_available_account(product_id)
+            if not account:
+                return {
+                    'success': False,
+                    'message': 'Không thể lấy tài khoản. Vui lòng thử lại sau.'
+                }
             
             # Trừ tiền
-            new_balance = user.get('balance', 0) - price
-            db.update_user(user_id, {'balance': new_balance})
-        else:
-            new_balance = user.get('balance', 0)
-        
-        # Đánh dấu tài khoản đã bán
-        accounts = db.get_accounts()
-        for account in accounts:
-            if account['data'] == available_account['data'] and not account['sold']:
-                account['sold'] = True
-                db.save_accounts(accounts)
-                break
-        
-        # Thêm vào lịch sử mua hàng
-        purchase_data = {
-            'product_id': product_id,
-            'product_name': product.get('name', ''),
-            'price': price,
-            'account_data': available_account.get('data', ''),
-            'purchased_at': datetime.datetime.now().isoformat()
-        }
-        
-        purchases = user.get('purchases', [])
-        purchases.append(purchase_data)
-        db.update_user(user_id, {'purchases': purchases})
-        
-        return {
-            'success': True,
-            'product_name': product.get('name', ''),
-            'price': price,
-            'new_balance': new_balance,
-            'account_info': available_account.get('data', '')
-        }
-    
+            if product_price > 0:
+                new_balance = user_balance - product_price
+                db.update_user(user_id, {'balance': new_balance})
+            else:
+                new_balance = user_balance
+            
+            # Lưu lịch sử mua hàng
+            purchase_data = {
+                'product_id': product_id,
+                'product_name': product.get('name', 'Unknown'),
+                'price': product_price,
+                'account_data': account.get('data', ''),
+                'timestamp': datetime.datetime.now().isoformat()
+            }
+            
+            user_purchases = user.get('purchases', [])
+            user_purchases.append(purchase_data)
+            db.update_user(user_id, {'purchases': user_purchases})
+            
+            # Trả về kết quả thành công
+            return {
+                'success': True,
+                'product_name': product.get('name', 'Unknown'),
+                'price': product_price,
+                'new_balance': new_balance,
+                'account_info': account.get('data', '')
+            }
+        except Exception as e:
+            logger.error(f"Error in process_purchase: {e}")
+            return {
+                'success': False,
+                'message': 'Đã xảy ra lỗi khi xử lý giao dịch. Vui lòng thử lại sau.'
+            }
+
     # Xử lý các callback data
     if data == "premium_accounts":
         # Hiển thị danh sách tài khoản trả phí
@@ -964,7 +991,7 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
         # Xử lý mua hàng
         result = process_purchase(user_id, product_id)
         
-        if result['success']:
+        if result and result.get('success'):
             # Gửi thông tin tài khoản cho người dùng
             bot.edit_message_text(
                 f"✅ *Mua hàng thành công!*\n\n"
@@ -991,7 +1018,8 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
             notify_admins(bot, admin_notification, parse_mode="Markdown")
         else:
             # Hiển thị thông báo lỗi
-            bot.answer_callback_query(call.id, f"❌ {result['message']}", show_alert=True)
+            error_message = result.get('message', 'Đã xảy ra lỗi không xác định') if result else 'Đã xảy ra lỗi không xác định'
+            bot.answer_callback_query(call.id, f"❌ {error_message}", show_alert=True)
             
             # Quay lại menu chính
             bot.edit_message_text(
@@ -1005,7 +1033,7 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
     # Xử lý các nút quay lại
     elif data == "back_to_main":
         bot.edit_message_text(
-            "🏠 *Menu chính*\n\nSố dư: {user.get('balance', 0):,} {config.CURRENCY}",
+            f"🏠 *Menu chính*\n\nSố dư: {user.get('balance', 0):,} {config.CURRENCY}",
             call.message.chat.id,
             call.message.message_id,
             parse_mode="Markdown",
@@ -1228,7 +1256,7 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
                 f"👤 *Thông tin người dùng*\n\n"
                 f"ID: `{target_user['id']}`\n"
                 f"Username: @{target_user.get('username', 'Không có')}\n"
-                f"Số dư: {target_user.get('balance', 0):,} {config.CURRENCY}\n"
+                f"Số dư: {target_user.get('balance', 0)} VNĐ\n"
                 f"Trạng thái: {'🚫 Bị cấm' if target_user.get('banned', False) else '✅ Hoạt động'}\n"
                 f"Ngày tham gia: {target_user.get('created_at', 'Không rõ').split('T')[0]}\n"
                 f"Tổng đơn hàng: {purchase_count}\n"

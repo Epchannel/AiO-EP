@@ -1,62 +1,379 @@
 [
     {
-        "id": 123456789,
-        "username": "admin",
-        "balance": 1000000,
-        "banned": false,
+        "id": 7140814657,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "UDJ7DX-MA7UV2-55LAZW",
+                "timestamp": "2025-03-17T23:34:31.713609"
+            },
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "5457ZR-9YMCGJ-4HU9NA",
+                "timestamp": "2025-03-17T23:34:44.883320"
+            },
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "QYDQP7-Y76HF2-4747YE",
+                "timestamp": "2025-03-17T23:34:58.201934"
+            },
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-M75B-23RL-12CZ-Q6QC",
+                "timestamp": "2025-03-17T23:38:29.409965"
+            }
+        ],
+        "banned": false
+    },
+    {
+        "id": 1864962661,
+        "balance": 0,
         "purchases": [],
-        "created_at": "2023-01-01T00:00:00"
+        "banned": false
     },
     {
         "id": 5457094279,
-        "username": "epchannelll",
+        "balance": 0,
+        "purchases": [],
+        "banned": false
+    },
+    {
+        "id": 7488068670,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-M75B-23RL-12CZ-Q6QC",
+                "timestamp": "2025-03-17T23:10:54.150995"
+            }
+        ],
+        "banned": false
+    },
+    {
+        "id": 5225521286,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "QYDQP7-Y76HF2-4747YE",
+                "timestamp": "2025-03-17T23:12:41.439521"
+            }
+        ],
+        "banned": false
+    },
+    {
+        "id": 1916382374,
+        "balance": 0,
+        "purchases": [],
+        "banned": false
+    },
+    {
+        "id": 1307757183,
+        "username": "dhvu1990",
         "balance": 0,
         "banned": false,
         "purchases": [],
-        "created_at": "2025-03-14T11:37:06.105341"
+        "created_at": "2025-03-17 18:57:34"
     },
     {
-        "id": 7140814657,
-        "username": "ngochacoder",
-        "balance": 10000.0,
+        "id": 6220854723,
+        "username": "yukii2000",
+        "balance": 0,
         "banned": false,
-        "purchases": [
-            {
-                "product_id": 5,
-                "product_name": "Gmail Free",
-                "price": 0,
-                "account_data": "gmail_free1@example.com:gmailpass1",
-                "purchased_at": "2025-03-14T11:52:56.165129"
-            },
-            {
-                "product_id": 3,
-                "product_name": "Youtube Premium",
-                "price": 40000,
-                "account_data": "youtube_user1@example.com:youtubepass1",
-                "purchased_at": "2025-03-14T14:22:36.148034"
-            },
-            {
-                "product_id": 5,
-                "product_name": "Gmail Free",
-                "price": 0,
-                "account_data": "gmail_free2@example.com:gmailpass2",
-                "purchased_at": "2025-03-14T14:23:12.524832"
-            },
-            {
-                "product_id": 5,
-                "product_name": "Gmail Free",
-                "price": 0,
-                "account_data": "gmail_free22@example.com:gmailpass1",
-                "purchased_at": "2025-03-14T14:34:20.372462"
-            },
-            {
-                "product_id": 6,
-                "product_name": "Bithub",
-                "price": 0.0,
-                "account_data": "fiyafik789@excederm.com:fiyafik789@",
-                "purchased_at": "2025-03-14T15:43:10.311912"
-            }
-        ],
-        "created_at": "2025-03-14T11:52:41.803885"
+        "purchases": [],
+        "created_at": "2025-03-17 18:57:38"
+    },
+    {
+        "id": 5249925579,
+        "username": "occoloc",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:57:48"
+    },
+    {
+        "id": 2141675254,
+        "username": "QUANGSANG36",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:57:59"
+    },
+    {
+        "id": 1181061580,
+        "username": "Kietphanz",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:57:59"
+    },
+    {
+        "id": 1682663961,
+        "username": "Rayiiz",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:58:02"
+    },
+    {
+        "id": 1088826189,
+        "username": "risketlucio",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:58:03"
+    },
+    {
+        "id": 949940973,
+        "username": "hwinxz",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:58:10"
+    },
+    {
+        "id": 7538691623,
+        "username": "autogpmok",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:58:13"
+    },
+    {
+        "id": 1509851649,
+        "username": "davidkush28",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:58:34"
+    },
+    {
+        "id": 1146919564,
+        "username": "atus1506",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:58:35"
+    },
+    {
+        "id": 904593176,
+        "username": "kengi2311",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:58:53"
+    },
+    {
+        "id": 1921587118,
+        "username": "hxhiu",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:58:56"
+    },
+    {
+        "id": 5295694116,
+        "username": "sananchi",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:04"
+    },
+    {
+        "id": 777280724,
+        "username": "lucylatui",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:05"
+    },
+    {
+        "id": 593553203,
+        "username": "tofuzz",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:23"
+    },
+    {
+        "id": 5117006532,
+        "username": "vanson9556",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:26"
+    },
+    {
+        "id": 7930249556,
+        "username": "suxinjily",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:27"
+    },
+    {
+        "id": 397428588,
+        "username": "dzung1",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:27"
+    },
+    {
+        "id": 879966314,
+        "username": "quit9898",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:36"
+    },
+    {
+        "id": 1331261560,
+        "username": "panikpikachu",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:38"
+    },
+    {
+        "id": 7637670077,
+        "username": "uyennlee",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:38"
+    },
+    {
+        "id": 350130295,
+        "username": "luc1frr",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:44"
+    },
+    {
+        "id": 6198540572,
+        "username": "Unlockmeta",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:48"
+    },
+    {
+        "id": 813559603,
+        "username": "Id09st",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:49"
+    },
+    {
+        "id": 337790424,
+        "username": "rocky3414",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:51"
+    },
+    {
+        "id": 904558945,
+        "username": "longmiker",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:58"
+    },
+    {
+        "id": 713177588,
+        "username": "tendernat",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 19:00:06"
+    },
+    {
+        "id": 6815733629,
+        "username": "ductaihjhj",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 19:00:11"
+    },
+    {
+        "id": 5070021487,
+        "username": "harrytienthereal",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 19:00:13"
+    },
+    {
+        "id": 2080232783,
+        "username": "nguyenanhtun",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 21:13:59"
+    },
+    {
+        "id": 5677537156,
+        "username": "QDT69",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 21:13:59"
+    },
+    {
+        "id": 975486085,
+        "username": "vinhleduc",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 21:38:38"
+    },
+    {
+        "id": 5833992737,
+        "username": "TriAbcxyz",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 22:01:19"
+    },
+    {
+        "id": 6143639983,
+        "username": "damri9358",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 22:52:38"
+    },
+    {
+        "id": 7144979238,
+        "username": "datnguyen24",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 22:52:39"
+    },
+    {
+        "id": 6809524658,
+        "username": "vietdung2708",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 22:55:50"
     }
 ]

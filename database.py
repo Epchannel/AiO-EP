@@ -12,10 +12,16 @@ class Database:
         self._init_file(config.USERS_FILE, [])
         self._init_file(config.PRODUCTS_FILE, [])
         self._init_file(config.ACCOUNTS_FILE, [])
+        
+        # Make sure users is initialized as a list, not a dict
+        self.users = []  # Changed from dict to list
+        self.load_data()
     
     def _init_file(self, file_path: str, default_data: Any) -> None:
         """Khởi tạo file nếu chưa tồn tại"""
         if not os.path.exists(file_path):
+            # Đảm bảo thư mục tồn tại
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
             with open(file_path, 'w', encoding='utf-8') as f:
                 json.dump(default_data, f, ensure_ascii=False, indent=4)
     
@@ -25,8 +31,8 @@ class Database:
             with open(file_path, 'r', encoding='utf-8') as f:
                 return json.load(f)
         except (json.JSONDecodeError, FileNotFoundError):
-            # Nếu file không tồn tại hoặc không hợp lệ, tạo mới
-            default_data = [] if file_path != config.USERS_FILE else {}
+            # Luôn khởi tạo là list trống cho tất cả các file
+            default_data = []
             self._write_data(file_path, default_data)
             return default_data
     
@@ -35,28 +41,62 @@ class Database:
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
     
+    def load_data(self):
+        """Load user data from the configured users file"""
+        try:
+            self.users = self._read_data(config.USERS_FILE)
+        except FileNotFoundError:
+            self.users = []
+            self.save_data()
+
+    def save_data(self):
+        """Save user data to the configured users file"""
+        self._write_data(config.USERS_FILE, self.users)
+    
     # === User methods ===
     def get_user(self, user_id: int) -> Optional[Dict]:
         """Lấy thông tin người dùng theo ID"""
-        users = self._read_data(config.USERS_FILE)
-        for user in users:
-            if user.get('id') == user_id:
-                return user
-        return None
+        try:
+            users = self._read_data(config.USERS_FILE)
+            for user in users:
+                if user.get('id') == user_id:
+                    return user
+                
+            # Nếu không tìm thấy user, tạo mới
+            new_user = {
+                'id': user_id,
+                'balance': 0,
+                'purchases': [],
+                'banned': False
+            }
+            self.add_user(new_user)
+            return new_user
+        except Exception as e:
+            print(f"Error getting user: {e}")
+            # Trả về user mặc định để tránh lỗi NoneType
+            return {
+                'id': user_id,
+                'balance': 0,
+                'purchases': [],
+                'banned': False
+            }
     
-    def add_user(self, user_data: Dict) -> None:
+    def add_user(self, user_data: Dict) -> bool:
         """Thêm người dùng mới"""
-        users = self._read_data(config.USERS_FILE)
-        # Kiểm tra xem người dùng đã tồn tại chưa
-        for i, user in enumerate(users):
-            if user.get('id') == user_data['id']:
-                # Cập nhật thông tin người dùng
-                users[i] = user_data
+        try:
+            users = self._read_data(config.USERS_FILE)
+            if not isinstance(users, list):
+                users = []
+            
+            # Check if user already exists
+            if not any(user.get('id') == user_data['id'] for user in users):
+                users.append(user_data)
                 self._write_data(config.USERS_FILE, users)
-                return
-        # Thêm người dùng mới
-        users.append(user_data)
-        self._write_data(config.USERS_FILE, users)
+                return True
+            return False
+        except Exception as e:
+            print(f"Error adding user: {e}")
+            return False
     
     def update_user(self, user_id: int, update_data: Dict) -> bool:
         """Cập nhật thông tin người dùng"""
