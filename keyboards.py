@@ -231,4 +231,52 @@ def confirm_delete_product_keyboard(product_id: int) -> InlineKeyboardMarkup:
         InlineKeyboardButton("✅ Xác nhận", callback_data=f"confirm_delete_product_{product_id}"),
         InlineKeyboardButton("❌ Hủy", callback_data="cancel_delete_product")
     )
+    return markup
+
+def user_list_navigation_keyboard(current_page: int, total_pages: int, search_query: str = '') -> InlineKeyboardMarkup:
+    """Tạo bàn phím điều hướng cho danh sách người dùng"""
+    markup = InlineKeyboardMarkup(row_width=5)
+    buttons = []
+    
+    # Nút tìm kiếm
+    search_button = InlineKeyboardButton("🔍 Tìm kiếm", callback_data="user_list_search")
+    
+    # Nút làm mới
+    refresh_button = InlineKeyboardButton("🔄 Làm mới", callback_data="user_list_refresh")
+    
+    # Nút điều hướng trang
+    if total_pages > 1:
+        # Nút trang đầu
+        if current_page > 0:
+            buttons.append(InlineKeyboardButton("⏮️", callback_data="user_list_page_0"))
+        
+        # Nút trang trước
+        if current_page > 0:
+            buttons.append(InlineKeyboardButton("◀️", callback_data=f"user_list_page_{current_page-1}"))
+        
+        # Nút trang hiện tại
+        buttons.append(InlineKeyboardButton(f"{current_page+1}/{total_pages}", callback_data="noop"))
+        
+        # Nút trang sau
+        if current_page < total_pages - 1:
+            buttons.append(InlineKeyboardButton("▶️", callback_data=f"user_list_page_{current_page+1}"))
+        
+        # Nút trang cuối
+        if current_page < total_pages - 1:
+            buttons.append(InlineKeyboardButton("⏭️", callback_data=f"user_list_page_{total_pages-1}"))
+    
+    # Thêm các nút vào bàn phím
+    if buttons:
+        markup.add(*buttons)
+    
+    # Thêm nút tìm kiếm và làm mới
+    markup.add(search_button, refresh_button)
+    
+    # Hiển thị trạng thái tìm kiếm nếu có
+    if search_query:
+        markup.add(InlineKeyboardButton(f"🔍 Đang tìm: '{search_query}'", callback_data="noop"))
+    
+    # Nút quay lại
+    markup.add(InlineKeyboardButton("🔙 Quay lại", callback_data="admin_panel"))
+    
     return markup 

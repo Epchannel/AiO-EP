@@ -47,5 +47,12 @@
         "description": "HMA VPN là một trong những dịch vụ VPN phổ biến với nhiều tính năng ưu việt.",
         "is_free": true,
         "id": 12
+    },
+    {
+        "name": "Gamma AI",
+        "price": 30000.0,
+        "description": "Gamma AI là công cụ kết hợp trí tuệ nhân tạo (AI) tạo ra những bài thuyết trình, tóm tắt tài liệu, viết ghi chú với thời gian ngắn",
+        "is_free": false,
+        "id": 13
     }
 ]

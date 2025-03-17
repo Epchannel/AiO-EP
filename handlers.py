@@ -327,12 +327,87 @@ def user_list_command(bot: TeleBot, message: Message) -> None:
         bot.send_message(user_id, "👥 Chưa có người dùng nào.")
         return
     
-    bot.send_message(
-        user_id,
-        "👥 *Danh sách người dùng*\n\nChọn một người dùng để xem chi tiết:",
-        parse_mode="Markdown",
-        reply_markup=keyboards.user_list_keyboard(users)
-    )
+    # Lưu trạng thái để xử lý phân trang
+    user_states[user_id] = {
+        'state': 'viewing_user_list',
+        'page': 0,
+        'users': users,
+        'search_query': ''
+    }
+    
+    # Hiển thị trang đầu tiên
+    display_user_list_page(bot, user_id, message.message_id)
+
+def display_user_list_page(bot: TeleBot, user_id: int, message_id: int = None) -> None:
+    """Hiển thị một trang danh sách người dùng"""
+    state = user_states.get(user_id, {})
+    users = state.get('users', [])
+    page = state.get('page', 0)
+    search_query = state.get('search_query', '').lower()
+    
+    # Lọc người dùng theo từ khóa tìm kiếm nếu có
+    if search_query:
+        filtered_users = []
+        for user in users:
+            username = str(user.get('username', '')).lower()
+            user_id_str = str(user.get('id', ''))
+            if search_query in username or search_query in user_id_str:
+                filtered_users.append(user)
+        users = filtered_users
+    
+    # Số người dùng mỗi trang
+    per_page = 5
+    total_pages = (len(users) + per_page - 1) // per_page
+    
+    if total_pages == 0:
+        text = "🔍 Không tìm thấy người dùng nào phù hợp."
+        markup = keyboards.user_list_navigation_keyboard(0, 0, search_query)
+    else:
+        # Lấy người dùng cho trang hiện tại
+        start_idx = page * per_page
+        end_idx = min(start_idx + per_page, len(users))
+        current_users = users[start_idx:end_idx]
+        
+        # Tạo nội dung tin nhắn
+        text = f"👥 *Danh sách người dùng* (Trang {page+1}/{total_pages})\n\n"
+        
+        for i, user in enumerate(current_users, 1):
+            username = user.get('username', 'Không có')
+            user_id = user.get('id', 'N/A')
+            balance = user.get('balance', 0)
+            banned = "🚫" if user.get('banned', False) else "✅"
+            
+            text += f"{i}. {banned} @{username} (ID: `{user_id}`)\n   💰 {balance:,} {config.CURRENCY}\n\n"
+        
+        # Tạo bàn phím điều hướng
+        markup = keyboards.user_list_navigation_keyboard(page, total_pages, search_query)
+    
+    # Gửi hoặc cập nhật tin nhắn
+    if message_id:
+        try:
+            bot.edit_message_text(
+                text,
+                user_id,
+                message_id,
+                parse_mode="Markdown",
+                reply_markup=markup
+            )
+        except Exception as e:
+            logger.error(f"Error updating user list message: {e}")
+            # Nếu không thể cập nhật, gửi tin nhắn mới
+            bot.send_message(
+                user_id,
+                text,
+                parse_mode="Markdown",
+                reply_markup=markup
+            )
+    else:
+        bot.send_message(
+            user_id,
+            text,
+            parse_mode="Markdown",
+            reply_markup=markup
+        )
 
 def ban_user_command(bot: TeleBot, message: Message) -> None:
     """Xử lý lệnh /ban_user"""
@@ -628,6 +703,107 @@ def handle_state(bot: TeleBot, message: Message) -> None:
             parse_mode="Markdown"
         )
     
+    elif state == 'waiting_for_user_id_to_add_money':
+        # Xử lý ID người dùng để thêm tiền
+        try:
+            target_user_id = int(text.strip())
+            target_user = db.get_user(target_user_id)
+            
+            if not target_user:
+                bot.send_message(
+                    user_id,
+                    "❌ Không tìm thấy người dùng với ID này. Vui lòng kiểm tra lại."
+                )
+                return
+            
+            # Lưu ID người dùng và chuyển sang trạng thái nhập số tiền
+            user_states[user_id] = {
+                'state': 'waiting_for_add_money_amount',
+                'target_user_id': target_user_id
+            }
+            
+            bot.send_message(
+                user_id,
+                f"💰 Thêm tiền cho người dùng:\n\n"
+                f"ID: {target_user['id']}\n"
+                f"Username: @{target_user.get('username', 'Không có')}\n"
+                f"Số dư hiện tại: {target_user.get('balance', 0):,} {config.CURRENCY}\n\n"
+                f"Vui lòng nhập số tiền muốn thêm:"
+            )
+        except ValueError:
+            bot.send_message(
+                user_id,
+                "❌ ID người dùng phải là một số. Vui lòng nhập lại."
+            )
+
+    elif state == 'waiting_for_add_money_amount':
+        # Xử lý số tiền cần thêm
+        try:
+            amount = int(text.strip())
+            if amount <= 0:
+                bot.send_message(
+                    user_id,
+                    "❌ Số tiền phải lớn hơn 0. Vui lòng nhập lại."
+                )
+                return
+            
+            target_user_id = user_states[user_id]['target_user_id']
+            target_user = db.get_user(target_user_id)
+            
+            if not target_user:
+                bot.send_message(
+                    user_id,
+                    "❌ Không tìm thấy người dùng. Vui lòng thử lại."
+                )
+                del user_states[user_id]
+                return
+            
+            # Cập nhật số dư
+            current_balance = target_user.get('balance', 0)
+            new_balance = current_balance + amount
+            
+            if db.update_user(target_user_id, {'balance': new_balance}):
+                # Xóa trạng thái
+                del user_states[user_id]
+                
+                bot.send_message(
+                    user_id,
+                    f"✅ Đã thêm {amount:,} {config.CURRENCY} cho người dùng @{target_user.get('username', 'Không có')}.\n"
+                    f"Số dư mới: {new_balance:,} {config.CURRENCY}",
+                    reply_markup=keyboards.back_button("back_to_user_management")
+                )
+                
+                # Thông báo cho người dùng
+                try:
+                    bot.send_message(
+                        target_user_id,
+                        f"💰 Tài khoản của bạn vừa được cộng thêm {amount:,} {config.CURRENCY}.\n"
+                        f"Số dư hiện tại: {new_balance:,} {config.CURRENCY}"
+                    )
+                except Exception as e:
+                    logger.error(f"Không thể gửi thông báo đến người dùng {target_user_id}: {e}")
+            else:
+                bot.send_message(
+                    user_id,
+                    "❌ Không thể cập nhật số dư. Vui lòng thử lại sau."
+                )
+                del user_states[user_id]
+        except ValueError:
+            bot.send_message(
+                user_id,
+                "❌ Số tiền phải là một số. Vui lòng nhập lại."
+            )
+    
+    elif state == 'searching_user':
+        # Xử lý tìm kiếm người dùng
+        search_query = message.text.strip().lower()
+        user_states[user_id]['search_query'] = search_query
+        user_states[user_id]['page'] = 0
+        user_states[user_id]['state'] = 'viewing_user_list'
+        
+        bot.delete_message(user_id, message.message_id)
+        display_user_list_page(bot, user_id)
+
     # Thêm các trạng thái khác ở đây
 
 def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
@@ -951,17 +1127,17 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
     
     elif data.startswith("admin_user_") and is_admin(user_id):
         # Xem chi tiết người dùng
-        user_id = int(data.split("_")[2])
-        user = db.get_user(user_id)
+        target_user_id = int(data.split("_")[2])
+        target_user = db.get_user(target_user_id)
         
-        if user:
-            status = "🚫 Đã bị cấm" if user.get('banned', False) else "✅ Đang hoạt động"
+        if target_user:
+            status = "🚫 Đã bị cấm" if target_user.get('banned', False) else "✅ Đang hoạt động"
             bot.edit_message_text(
                 f"👤 Thông tin người dùng:\n\n"
-                f"ID: {user['id']}\n"
-                f"Username: @{user.get('username', 'Không có')}\n"
-                f"Tên: {user.get('first_name', '')} {user.get('last_name', '')}\n"
-                f"Số dư: {user.get('balance', 0)} VNĐ\n"
+                f"ID: {target_user['id']}\n"
+                f"Username: @{target_user.get('username', 'Không có')}\n"
+                f"Tên: {target_user.get('first_name', '')} {target_user.get('last_name', '')}\n"
+                f"Số dư: {target_user.get('balance', 0)} VNĐ\n"
                 f"Trạng thái: {status}",
                 call.message.chat.id,
                 call.message.message_id,
@@ -1089,7 +1265,6 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
             call.message.message_id,
             reply_markup=keyboards.main_menu(is_admin(user_id))
         )
-    
     # Xử lý phân trang
     elif data.startswith("product_page_"):
         page = int(data.split("_")[2])
@@ -1138,9 +1313,7 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
                 f"ID: {target_user['id']}\n"
                 f"Username: @{target_user.get('username', 'Không có')}\n"
                 f"Số dư hiện tại: {target_user.get('balance', 0):,} {config.CURRENCY}\n\n"
-                f"Vui lòng nhập số tiền muốn thêm:",
-                call.message.chat.id,
-                call.message.message_id
+                f"Vui lòng nhập số tiền muốn thêm:"
             )
     
     elif data.startswith("ban_user_") and is_admin(user_id):
@@ -1226,7 +1399,7 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
     
     # Thêm xử lý cho nút "Thêm tiền" trong menu quản lý người dùng
     elif data == "add_money" and is_admin(user_id):
-        # Yêu cầu admin nhập ID người dùng
+        # Hiển thị form nhập ID người dùng để thêm tiền
         user_states[user_id] = {
             'state': 'waiting_for_user_id_to_add_money',
             'data': {}
@@ -1234,7 +1407,7 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
         
         bot.edit_message_text(
             "💰 *Thêm tiền cho người dùng*\n\n"
-            "Vui lòng nhập ID người dùng:",
+            "Vui lòng nhập ID người dùng bạn muốn thêm tiền:",
             call.message.chat.id,
             call.message.message_id,
             parse_mode="Markdown"
@@ -1251,16 +1424,15 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
             purchases = target_user.get('purchases', [])
             purchase_count = len(purchases)
             total_spent = sum(p.get('price', 0) for p in purchases)
+            status = '🚫 Bị cấm' if target_user.get('banned', False) else '✅ Hoạt động'
             
             user_info = (
                 f"👤 *Thông tin người dùng*\n\n"
                 f"ID: `{target_user['id']}`\n"
                 f"Username: @{target_user.get('username', 'Không có')}\n"
+                f"Tên: {target_user.get('first_name', '')} {target_user.get('last_name', '')}\n"
                 f"Số dư: {target_user.get('balance', 0)} VNĐ\n"
-                f"Trạng thái: {'🚫 Bị cấm' if target_user.get('banned', False) else '✅ Hoạt động'}\n"
-                f"Ngày tham gia: {target_user.get('created_at', 'Không rõ').split('T')[0]}\n"
-                f"Tổng đơn hàng: {purchase_count}\n"
-                f"Tổng chi tiêu: {total_spent:,} {config.CURRENCY}"
+                f"Trạng thái: {status}"
             )
             
             bot.edit_message_text(
@@ -1410,6 +1582,35 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
             call.message.message_id,
             reply_markup=keyboards.back_button("back_to_product_list")
         )
+    
+    # Thêm xử lý cho nút tìm kiếm người dùng
+    elif data.startswith("user_list_page_"):
+        # Xử lý phân trang danh sách người dùng
+        page = int(data.split("_")[3])
+        user_states[user_id]['page'] = page
+        display_user_list_page(bot, user_id, call.message.message_id)
+
+    elif data == "user_list_search":
+        # Bắt đầu tìm kiếm người dùng
+        user_states[user_id]['state'] = 'searching_user'
+        bot.edit_message_text(
+            "🔍 *Tìm kiếm người dùng*\n\n"
+            "Vui lòng nhập tên người dùng hoặc ID để tìm kiếm:",
+            call.message.chat.id,
+            call.message.message_id,
+            parse_mode="Markdown"
+        )
+
+    elif data == "user_list_refresh":
+        # Làm mới danh sách người dùng
+        users = db.get_all_users()
+        user_states[user_id] = {
+            'state': 'viewing_user_list',
+            'page': 0,
+            'users': users,
+            'search_query': ''
+        }
+        display_user_list_page(bot, user_id, call.message.message_id)
     
     # Đánh dấu callback đã được xử lý
     bot.answer_callback_query(call.id)
