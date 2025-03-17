@@ -98,5 +98,10 @@
         "product_id": 6,
         "data": "fiyafik789@excederm.com:fiyafik789@",
         "sold": false
+    },
+    {
+        "product_id": 7,
+        "data": "dattojapan2020@gmail.com:Admin123@",
+        "sold": false
     }
 ]

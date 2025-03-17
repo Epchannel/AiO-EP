@@ -1156,7 +1156,7 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
                 reply_markup=keyboards.back_button("back_to_user_list")
             )
     
-    elif data.startswith("upload_accounts_") and is_admin(user_id):
+    elif data.startswith("upload_product_") and is_admin(user_id):
         # Upload tài khoản cho sản phẩm
         product_id = int(data.split("_")[2])
         product = db.get_product(product_id)
@@ -1330,6 +1330,57 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
             call.message.message_id,
             parse_mode="Markdown",
             reply_markup=keyboards.admin_panel_keyboard()
+        )
+    
+    # Thêm xử lý cho nút xóa sản phẩm
+    elif data.startswith("delete_product_") and is_admin(user_id):
+        # Xóa sản phẩm
+        product_id = int(data.split("_")[2])
+        product = db.get_product(product_id)
+        
+        if product:
+            # Xác nhận xóa sản phẩm
+            bot.edit_message_text(
+                f"🗑️ *Xác nhận xóa sản phẩm*\n\n"
+                f"ID: {product['id']}\n"
+                f"Tên: {product['name']}\n"
+                f"Giá: {product['price']:,} {config.CURRENCY}\n\n"
+                f"Bạn có chắc chắn muốn xóa sản phẩm này?",
+                call.message.chat.id,
+                call.message.message_id,
+                parse_mode="Markdown",
+                reply_markup=confirm_delete_product_keyboard(product_id)
+            )
+    
+    # Thêm xử lý cho nút xác nhận xóa sản phẩm
+    elif data.startswith("confirm_delete_product_") and is_admin(user_id):
+        # Xác nhận xóa sản phẩm
+        product_id = int(data.split("_")[3])
+        
+        # Xóa sản phẩm
+        if db.delete_product(product_id):
+            bot.edit_message_text(
+                "✅ Đã xóa sản phẩm thành công!",
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=keyboards.back_button("back_to_product_list")
+            )
+        else:
+            bot.edit_message_text(
+                "❌ Không thể xóa sản phẩm. Vui lòng thử lại sau.",
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=keyboards.back_button("back_to_product_list")
+            )
+    
+    # Thêm xử lý cho nút hủy xóa sản phẩm
+    elif data == "cancel_delete_product" and is_admin(user_id):
+        # Hủy xóa sản phẩm
+        bot.edit_message_text(
+            "❌ Đã hủy xóa sản phẩm.",
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=keyboards.back_button("back_to_product_list")
         )
     
     # Đánh dấu callback đã được xử lý

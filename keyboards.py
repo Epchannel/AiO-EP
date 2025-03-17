@@ -222,4 +222,13 @@ def admin_panel_keyboard() -> InlineKeyboardMarkup:
         InlineKeyboardButton(f"{status_text} Hiển thị tài khoản trả phí", callback_data="toggle_premium_visibility")
     )
     
+    return markup
+
+def confirm_delete_product_keyboard(product_id: int) -> InlineKeyboardMarkup:
+    """Tạo bàn phím xác nhận xóa sản phẩm"""
+    markup = InlineKeyboardMarkup()
+    markup.row(
+        InlineKeyboardButton("✅ Xác nhận", callback_data=f"confirm_delete_product_{product_id}"),
+        InlineKeyboardButton("❌ Hủy", callback_data="cancel_delete_product")
+    )
     return markup 

@@ -40,5 +40,12 @@
         "price": 0.0,
         "description": "Website tạo biopage, rút gọn link, tạo QR, Truyền file,  Chia sẻ danh bạ, Link sự kiện, Host HTML, Web tools",
         "is_free": true
+    },
+    {
+        "id": 7,
+        "name": "Kling AI",
+        "price": 99000.0,
+        "description": "Kling AI gói Standard 660 credit/1 tháng, không bảo hành",
+        "is_free": false
     }
 ]
