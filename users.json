@@ -1,0 +1,44 @@
+{
+    "users": [
+        {
+            "id": 5457094279,
+            "username": "epchannelll",
+            "balance": 0,
+            "banned": false,
+            "purchases": [],
+            "created_at": "2025-03-17T21:20:33.817792"
+        },
+        {
+            "id": 5560145221,
+            "username": "user_5560145221",
+            "balance": 0,
+            "banned": false,
+            "purchases": [],
+            "created_at": "2025-03-17T22:52:37.318973"
+        },
+        {
+            "id": 6143639983,
+            "username": "damri9358",
+            "balance": 0,
+            "banned": false,
+            "purchases": [],
+            "created_at": "2025-03-17T22:52:38.408277"
+        },
+        {
+            "id": 5833992737,
+            "username": "TriAbcxyz",
+            "balance": 0,
+            "banned": false,
+            "purchases": [],
+            "created_at": "2025-03-17T22:52:38.971096"
+        },
+        {
+            "id": 7144979238,
+            "username": "datnguyen24",
+            "balance": 0,
+            "banned": false,
+            "purchases": [],
+            "created_at": "2025-03-17T22:52:39.234786"
+        }
+    ]
+}

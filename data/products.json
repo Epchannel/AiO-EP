@@ -1,0 +1,72 @@
+[
+    {
+        "id": 6,
+        "name": "Bithub",
+        "price": 0.0,
+        "description": "Website tạo biopage, rút gọn link, tạo QR, Truyền file,  Chia sẻ danh bạ, Link sự kiện, Host HTML, Web tools",
+        "is_free": true
+    },
+    {
+        "id": 7,
+        "name": "Kling AI Standard",
+        "price": 99000.0,
+        "description": "Kling AI gói Standard khoảng từ 660-1k credit/1 tháng, không bảo hành",
+        "is_free": false
+    },
+    {
+        "name": "Monica Unlimited",
+        "price": 50000.0,
+        "description": "Tài khoản dùng chung Monica Không giới hạn truy cập vào các model: GPT-4o & o1, Claude 3.7 Sonnet, Gemini 2.0 Pro, Llama 3.1 405B...",
+        "is_free": false,
+        "id": 8
+    },
+    {
+        "name": "Semrush Guru",
+        "price": 70000.0,
+        "description": "Semrush là công cụ SEO phổ biến, được dùng để nghiên cứu và phân tích từ khoá, các chủ số SEO, đối thủ cạnh tranh được rất nhiều doanh nghiệp tin dùng",
+        "is_free": false,
+        "id": 9
+    },
+    {
+        "name": "Duolingo Family",
+        "price": 0.0,
+        "description": "Nền tảng học ngôn ngữ miễn phí phổ biến",
+        "is_free": true,
+        "id": 10
+    },
+    {
+        "name": "Ipvanish",
+        "price": 0.0,
+        "description": "Tài khoản IPVanish VPN cho phép bạn truy cập các trang web và dịch vụ trực tuyến một cách an toàn, ẩn danh và bảo mật",
+        "is_free": true,
+        "id": 11
+    },
+    {
+        "name": "HMA VPN",
+        "price": 0.0,
+        "description": "HMA VPN là một trong những dịch vụ VPN phổ biến với nhiều tính năng ưu việt.",
+        "is_free": true,
+        "id": 12
+    },
+    {
+        "name": "Gamma AI",
+        "price": 30000.0,
+        "description": "Gamma AI là công cụ kết hợp trí tuệ nhân tạo (AI) tạo ra những bài thuyết trình, tóm tắt tài liệu, viết ghi chú với thời gian ngắn",
+        "is_free": false,
+        "id": 13
+    },
+    {
+        "id": 14,
+        "name": "Canva Edu",
+        "price": 0.0,
+        "description": "Canva là công cụ thiết kế đồ họa trực tuyến miễn phí giúp bạn dễ dàng tạo ra những hình ảnh đẹp",
+        "is_free": true
+    },
+    {
+        "name": "Vieon Premium",
+        "price": 0.0,
+        "description": "VieON VIP là một gói dịch vụ trả phí của VieON, cung cấp cho bạn quyền truy cập vào hàng ngàn kênh truyền hình, phim ảnh, chương trình và các nội dung giải trí độc quyền khác nhau",
+        "is_free": true,
+        "id": 15
+    }
+]
