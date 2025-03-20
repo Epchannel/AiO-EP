@@ -1,12 +1,5 @@
 [
     {
-        "id": 6,
-        "name": "Bithub",
-        "price": 0.0,
-        "description": "Website tạo biopage, rút gọn link, tạo QR, Truyền file,  Chia sẻ danh bạ, Link sự kiện, Host HTML, Web tools",
-        "is_free": true
-    },
-    {
         "id": 7,
         "name": "Kling AI Standard",
         "price": 99000.0,
@@ -26,13 +19,6 @@
         "description": "Semrush là công cụ SEO phổ biến, được dùng để nghiên cứu và phân tích từ khoá, các chủ số SEO, đối thủ cạnh tranh được rất nhiều doanh nghiệp tin dùng",
         "is_free": false,
         "id": 9
-    },
-    {
-        "name": "Duolingo Family",
-        "price": 0.0,
-        "description": "Nền tảng học ngôn ngữ miễn phí phổ biến",
-        "is_free": true,
-        "id": 10
     },
     {
         "name": "Ipvanish",

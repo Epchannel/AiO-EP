@@ -138,7 +138,9 @@ def help_command(bot: TeleBot, message: Message) -> None:
             "/add_money [user_id] [số tiền] - Thêm tiền cho người dùng\n"
             "/user_list - Xem danh sách người dùng\n"
             "/ban_user [user_id] - Cấm người dùng\n"
-            "/unban_user [user_id] - Bỏ cấm người dùng"
+            "/unban_user [user_id] - Bỏ cấm người dùng\n"
+            "/broadcast - Gửi thông báo đến tất cả người dùng\n"
+            "/add_admin [user_id] - Thêm quản trị viên mới"
         )
     
     bot.send_message(
@@ -803,6 +805,51 @@ def handle_state(bot: TeleBot, message: Message) -> None:
         
         bot.delete_message(user_id, message.message_id)
         display_user_list_page(bot, user_id)
+
+    elif state == 'waiting_for_broadcast':
+        # Xử lý nội dung broadcast
+        broadcast_content = text
+        success_count = 0
+        fail_count = 0
+        
+        # Lấy danh sách tất cả người dùng
+        users = db.get_all_users()
+        total_users = len(users)
+        
+        # Gửi tin nhắn đến từng người dùng
+        for user in users:
+            try:
+                target_user_id = user['id']
+                # Bỏ qua người dùng bị cấm
+                if user.get('banned', False):
+                    continue
+                # Gửi tin nhắn
+                bot.send_message(
+                    target_user_id,
+                    f"📢 *Thông báo từ Admin*\n\n{broadcast_content}",
+                    parse_mode="Markdown"
+                )
+                success_count += 1
+                # Tạm dừng ngắn để tránh spam
+                time.sleep(0.1)
+            except Exception as e:
+                logger.error(f"Không thể gửi broadcast đến user {target_user_id}: {e}")
+                fail_count += 1
+        
+        # Xóa trạng thái
+        del user_states[user_id]
+        
+        # Gửi báo cáo kết quả
+        bot.send_message(
+            user_id,
+            f"📊 *Kết quả gửi thông báo:*\n\n"
+            f"✅ Thành công: {success_count}\n"
+            f"❌ Thất bại: {fail_count}\n"
+            f"📝 Tổng số người dùng: {total_users}\n\n"
+            f"Nội dung đã gửi:\n{broadcast_content}",
+            parse_mode="Markdown",
+            reply_markup=keyboards.back_button("back_to_admin")
+        )
 
     # Thêm các trạng thái khác ở đây
 

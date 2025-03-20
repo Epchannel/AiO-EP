@@ -30,6 +30,13 @@
                 "price": 0.0,
                 "account_data": "https://invite.duolingo.com/family-plan/2-M75B-23RL-12CZ-Q6QC",
                 "timestamp": "2025-03-17T23:38:29.409965"
+            },
+            {
+                "product_id": 15,
+                "product_name": "Vieon Premium",
+                "price": 0.0,
+                "account_data": "0948802131:123456 | Tên Gói = VIP - 03 Tháng | AutoRenew = False | ExpiryDate = 2025-04-05 | Còn xem được = 17 | Payment = Voucher | HitTime = 3/18/2025 7:53 AM",
+                "timestamp": "2025-03-20T16:10:10.684831"
             }
         ],
         "banned": false,
@@ -248,7 +255,15 @@
         "username": "tofuzz",
         "balance": 0,
         "banned": false,
-        "purchases": [],
+        "purchases": [
+            {
+                "product_id": 15,
+                "product_name": "Vieon Premium",
+                "price": 0.0,
+                "account_data": "0985091954:123456 | Tên Gói = VIP - 03 Tháng | AutoRenew = False | ExpiryDate = 2025-05-01 | Còn xem được = 43 | Payment = Voucher | HitTime = 3/18/2025 7:53 AM",
+                "timestamp": "2025-03-20T16:13:12.247914"
+            }
+        ],
         "created_at": "2025-03-17 18:59:23"
     },
     {
@@ -479,7 +494,15 @@
         "username": "vietdung2708",
         "balance": 0,
         "banned": false,
-        "purchases": [],
+        "purchases": [
+            {
+                "product_id": 11,
+                "product_name": "Ipvanish",
+                "price": 0.0,
+                "account_data": "calhoun.robert@comcast.net:Fortran67! | Account Type = 2 | Renewal Date = 2025-04-26:12-35-20",
+                "timestamp": "2025-03-20T16:16:17.417673"
+            }
+        ],
         "created_at": "2025-03-17 22:55:50"
     },
     {
@@ -874,6 +897,13 @@
                 "price": 0.0,
                 "account_data": "https://invite.duolingo.com/family-plan/2-D276-L28D-M5LA-74NZ",
                 "timestamp": "2025-03-18T13:31:48.767613"
+            },
+            {
+                "product_id": 15,
+                "product_name": "Vieon Premium",
+                "price": 0.0,
+                "account_data": "0933236233:123456 | Tên Gói = VIP - 06 Tháng - Tự động gia hạn | AutoRenew = True | ExpiryDate = 2025-09-01 | Còn xem được = 166 | Payment = IAP | HitTime = 3/18/2025 7:53 AM",
+                "timestamp": "2025-03-20T16:41:05.241444"
             }
         ],
         "banned": false
@@ -903,6 +933,13 @@
                 "price": 0.0,
                 "account_data": "https://invite.duolingo.com/family-plan/2-D276-L28D-M5LA-74NZ",
                 "timestamp": "2025-03-18T13:31:54.095729"
+            },
+            {
+                "product_id": 15,
+                "product_name": "Vieon Premium",
+                "price": 0.0,
+                "account_data": "0962294282:123456 | Tên Gói = VIP - 03 Tháng | AutoRenew = False | ExpiryDate = 2025-04-20 | Còn xem được = 32 | Payment = Voucher | HitTime = 3/18/2025 7:53 AM",
+                "timestamp": "2025-03-20T16:10:50.714643"
             }
         ],
         "banned": false,
@@ -998,6 +1035,13 @@
                 "price": 0.0,
                 "account_data": "UDJ7DX-MA7UV2-55LAZW",
                 "timestamp": "2025-03-18T13:40:33.827176"
+            },
+            {
+                "product_id": 15,
+                "product_name": "Vieon Premium",
+                "price": 0.0,
+                "account_data": "0943468008:123456 | Tên Gói = VIP - 06 Tháng | AutoRenew = False | ExpiryDate = 2025-12-24 | Còn xem được = 280 | Payment = Voucher | HitTime = 3/18/2025 7:53 AM",
+                "timestamp": "2025-03-20T16:12:16.568632"
             }
         ],
         "banned": false,
@@ -1006,7 +1050,15 @@
     {
         "id": 1508104330,
         "balance": 0,
-        "purchases": [],
+        "purchases": [
+            {
+                "product_id": 11,
+                "product_name": "Ipvanish",
+                "price": 0.0,
+                "account_data": "keisha1204@aol.com:Peaches1! | Account Type = 2 | Renewal Date = 2025-10-24:22-11-17",
+                "timestamp": "2025-03-20T16:06:51.784534"
+            }
+        ],
         "banned": false,
         "username": "duchech"
     },
@@ -1379,6 +1431,20 @@
         "id": 2103778098,
         "balance": 1000,
         "purchases": [],
+        "banned": false
+    },
+    {
+        "id": 6926802069,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "UDJ7DX-MA7UV2-55LAZW",
+                "timestamp": "2025-03-20T16:17:06.369259"
+            }
+        ],
         "banned": false
     }
 ]
