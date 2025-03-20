@@ -1,0 +1,1384 @@
+[
+    {
+        "id": 7140814657,
+        "balance": 1000,
+        "purchases": [
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "UDJ7DX-MA7UV2-55LAZW",
+                "timestamp": "2025-03-17T23:34:31.713609"
+            },
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "5457ZR-9YMCGJ-4HU9NA",
+                "timestamp": "2025-03-17T23:34:44.883320"
+            },
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "QYDQP7-Y76HF2-4747YE",
+                "timestamp": "2025-03-17T23:34:58.201934"
+            },
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-M75B-23RL-12CZ-Q6QC",
+                "timestamp": "2025-03-17T23:38:29.409965"
+            }
+        ],
+        "banned": false,
+        "username": "ngochacoder"
+    },
+    {
+        "id": 1864962661,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-M75B-23RL-12CZ-Q6QC",
+                "timestamp": "2025-03-18T09:41:47.422408"
+            },
+            {
+                "product_id": 14,
+                "product_name": "Canva Edu",
+                "price": 0.0,
+                "account_data": "https://www.canva.com/brand/join?token=TDrZ8q2uVjOYCejOq5lkAA&brandingVariant=edu&referrer=team-invite",
+                "timestamp": "2025-03-18T09:43:30.515776"
+            }
+        ],
+        "banned": false,
+        "username": "tht_203"
+    },
+    {
+        "id": 5457094279,
+        "balance": 0,
+        "purchases": [],
+        "banned": false,
+        "username": "epchannelll"
+    },
+    {
+        "id": 7488068670,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-M75B-23RL-12CZ-Q6QC",
+                "timestamp": "2025-03-17T23:10:54.150995"
+            }
+        ],
+        "banned": false
+    },
+    {
+        "id": 5225521286,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "QYDQP7-Y76HF2-4747YE",
+                "timestamp": "2025-03-17T23:12:41.439521"
+            }
+        ],
+        "banned": false,
+        "username": "tuasan_d"
+    },
+    {
+        "id": 1916382374,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "5457ZR-9YMCGJ-4HU9NA",
+                "timestamp": "2025-03-18T09:22:30.578460"
+            },
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-X7KJ-Q1L5-11RX-G2TB",
+                "timestamp": "2025-03-18T14:34:13.281002"
+            }
+        ],
+        "banned": false,
+        "username": "maithisla"
+    },
+    {
+        "id": 1307757183,
+        "username": "dhvu1990",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:57:34"
+    },
+    {
+        "id": 6220854723,
+        "username": "yukii2000",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:57:38"
+    },
+    {
+        "id": 5249925579,
+        "username": "occoloc",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:57:48"
+    },
+    {
+        "id": 2141675254,
+        "username": "QUANGSANG36",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:57:59"
+    },
+    {
+        "id": 1181061580,
+        "username": "Kietphanz",
+        "balance": 0,
+        "banned": false,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-M75B-23RL-12CZ-Q6QC",
+                "timestamp": "2025-03-18T08:35:55.341990"
+            }
+        ],
+        "created_at": "2025-03-17 18:57:59"
+    },
+    {
+        "id": 1682663961,
+        "username": "Rayiiz",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:58:02"
+    },
+    {
+        "id": 1088826189,
+        "username": "risketlucio",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:58:03"
+    },
+    {
+        "id": 949940973,
+        "username": "hwinxz",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:58:10"
+    },
+    {
+        "id": 7538691623,
+        "username": "autogpmok",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:58:13"
+    },
+    {
+        "id": 1509851649,
+        "username": "davidkush28",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:58:34"
+    },
+    {
+        "id": 1146919564,
+        "username": "atus1506",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:58:35"
+    },
+    {
+        "id": 904593176,
+        "username": "kengi2311",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:58:53"
+    },
+    {
+        "id": 1921587118,
+        "username": "hxhiu",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:58:56"
+    },
+    {
+        "id": 5295694116,
+        "username": "sananchi",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:04"
+    },
+    {
+        "id": 777280724,
+        "username": "lucylatui",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:05"
+    },
+    {
+        "id": 593553203,
+        "username": "tofuzz",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:23"
+    },
+    {
+        "id": 5117006532,
+        "username": "vanson9556",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:26"
+    },
+    {
+        "id": 7930249556,
+        "username": "suxinjily",
+        "balance": 0,
+        "banned": false,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-M75B-23RL-12CZ-Q6QC",
+                "timestamp": "2025-03-18T03:05:01.232631"
+            }
+        ],
+        "created_at": "2025-03-17 18:59:27"
+    },
+    {
+        "id": 397428588,
+        "username": "dzung1",
+        "balance": 0,
+        "banned": false,
+        "purchases": [
+            {
+                "product_id": 14,
+                "product_name": "Canva Edu",
+                "price": 0.0,
+                "account_data": "https://www.canva.com/brand/join?token=TDrZ8q2uVjOYCejOq5lkAA&brandingVariant=edu&referrer=team-invite",
+                "timestamp": "2025-03-18T15:57:52.844363"
+            }
+        ],
+        "created_at": "2025-03-17 18:59:27"
+    },
+    {
+        "id": 879966314,
+        "username": "quit9898",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:36"
+    },
+    {
+        "id": 1331261560,
+        "username": "panikpikachu",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:38"
+    },
+    {
+        "id": 7637670077,
+        "username": "uyennlee",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:38"
+    },
+    {
+        "id": 350130295,
+        "username": "luc1frr",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:44"
+    },
+    {
+        "id": 6198540572,
+        "username": "Unlockmeta",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:48"
+    },
+    {
+        "id": 813559603,
+        "username": "Id09st",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:49"
+    },
+    {
+        "id": 337790424,
+        "username": "rocky3414",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 18:59:51"
+    },
+    {
+        "id": 904558945,
+        "username": "longmiker",
+        "balance": 0,
+        "banned": false,
+        "purchases": [
+            {
+                "product_id": 6,
+                "product_name": "Bithub",
+                "price": 0.0,
+                "account_data": "levek28115@dmener.com:levek28115@d",
+                "timestamp": "2025-03-18T09:54:09.484844"
+            },
+            {
+                "product_id": 14,
+                "product_name": "Canva Edu",
+                "price": 0.0,
+                "account_data": "https://www.canva.com/brand/join?token=TDrZ8q2uVjOYCejOq5lkAA&brandingVariant=edu&referrer=team-invite",
+                "timestamp": "2025-03-18T09:54:59.625451"
+            }
+        ],
+        "created_at": "2025-03-17 18:59:58"
+    },
+    {
+        "id": 713177588,
+        "username": "tendernat",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 19:00:06"
+    },
+    {
+        "id": 6815733629,
+        "username": "ductaihjhj",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 19:00:11"
+    },
+    {
+        "id": 5070021487,
+        "username": "harrytienthereal",
+        "balance": 0,
+        "banned": false,
+        "purchases": [
+            {
+                "product_id": 11,
+                "product_name": "Ipvanish",
+                "price": 0.0,
+                "account_data": "rudyardb@hotmail.com:D@j@n@e1997 | Account Type = 2 | Renewal Date = 2025-10-16:08-06-18",
+                "timestamp": "2025-03-18T13:26:40.203475"
+            }
+        ],
+        "created_at": "2025-03-17 19:00:13"
+    },
+    {
+        "id": 2080232783,
+        "username": "nguyenanhtun",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 21:13:59"
+    },
+    {
+        "id": 5677537156,
+        "username": "QDT69",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 21:13:59"
+    },
+    {
+        "id": 975486085,
+        "username": "vinhleduc",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 21:38:38"
+    },
+    {
+        "id": 5833992737,
+        "username": "TriAbcxyz",
+        "balance": 1000.0,
+        "banned": false,
+        "purchases": [
+            {
+                "product_id": 7,
+                "product_name": "Kling AI",
+                "price": 99000.0,
+                "account_data": "dattojapan2020@gmail.com:Admin123@",
+                "timestamp": "2025-03-18T15:50:31.469379"
+            }
+        ],
+        "created_at": "2025-03-17 22:01:19"
+    },
+    {
+        "id": 6143639983,
+        "username": "damri9358",
+        "balance": 0,
+        "banned": false,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-M75B-23RL-12CZ-Q6QC",
+                "timestamp": "2025-03-18T06:41:44.217015"
+            }
+        ],
+        "created_at": "2025-03-17 22:52:38"
+    },
+    {
+        "id": 7144979238,
+        "username": "datnguyen24",
+        "balance": 0,
+        "banned": false,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-M75B-23RL-12CZ-Q6QC",
+                "timestamp": "2025-03-18T10:19:11.049600"
+            }
+        ],
+        "created_at": "2025-03-17 22:52:39"
+    },
+    {
+        "id": 6809524658,
+        "username": "vietdung2708",
+        "balance": 0,
+        "banned": false,
+        "purchases": [],
+        "created_at": "2025-03-17 22:55:50"
+    },
+    {
+        "id": 6533015299,
+        "balance": 0,
+        "purchases": [],
+        "banned": false
+    },
+    {
+        "id": 857587873,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-M75B-23RL-12CZ-Q6QC",
+                "timestamp": "2025-03-18T05:58:32.888871"
+            }
+        ],
+        "banned": false
+    },
+    {
+        "id": 1049887375,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "UDJ7DX-MA7UV2-55LAZW",
+                "timestamp": "2025-03-18T07:21:19.373252"
+            },
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-M75B-23RL-12CZ-Q6QC",
+                "timestamp": "2025-03-18T07:22:18.607613"
+            }
+        ],
+        "banned": false,
+        "username": "HoaBV"
+    },
+    {
+        "id": 5247571523,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 11,
+                "product_name": "Ipvanish",
+                "price": 0.0,
+                "account_data": "seddembe@hotmail.com:Honeyboys1# | Account Type = 2 | Renewal Date = 2025-07-11:02-22-39",
+                "timestamp": "2025-03-18T08:53:06.482645"
+            }
+        ],
+        "banned": false,
+        "username": "ngductung"
+    },
+    {
+        "id": 6187956586,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "QYDQP7-Y76HF2-4747YE",
+                "timestamp": "2025-03-18T09:29:54.015874"
+            }
+        ],
+        "banned": false,
+        "username": "binh1227"
+    },
+    {
+        "id": 5622434048,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 11,
+                "product_name": "Ipvanish",
+                "price": 0.0,
+                "account_data": "dlparanoid@hotmail.com:1969Pepsi$ | Account Type = 2 | Renewal Date = 2025-10-21:23-06-01",
+                "timestamp": "2025-03-18T09:58:31.859602"
+            }
+        ],
+        "banned": false,
+        "username": "vn_ncvinh"
+    },
+    {
+        "id": 5698581924,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 14,
+                "product_name": "Canva Edu",
+                "price": 0.0,
+                "account_data": "https://www.canva.com/brand/join?token=TDrZ8q2uVjOYCejOq5lkAA&brandingVariant=edu&referrer=team-invite",
+                "timestamp": "2025-03-18T10:53:56.810887"
+            },
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-X7KJ-Q1L5-11RX-G2TB",
+                "timestamp": "2025-03-18T21:41:11.047312"
+            }
+        ],
+        "banned": false
+    },
+    {
+        "id": 1122026783,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "UDJ7DX-MA7UV2-55LAZW",
+                "timestamp": "2025-03-18T11:49:31.717128"
+            },
+            {
+                "product_id": 14,
+                "product_name": "Canva Edu",
+                "price": 0.0,
+                "account_data": "https://www.canva.com/brand/join?token=TDrZ8q2uVjOYCejOq5lkAA&brandingVariant=edu&referrer=team-invite",
+                "timestamp": "2025-03-18T11:49:52.654627"
+            }
+        ],
+        "banned": false,
+        "username": "TMikkel"
+    },
+    {
+        "id": 1303742107,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "5457ZR-9YMCGJ-4HU9NA",
+                "timestamp": "2025-03-18T12:08:35.526985"
+            }
+        ],
+        "banned": false,
+        "username": "cuonghely"
+    },
+    {
+        "id": 8000432059,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "QYDQP7-Y76HF2-4747YE",
+                "timestamp": "2025-03-18T12:11:24.351483"
+            }
+        ],
+        "banned": false
+    },
+    {
+        "id": 698397539,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-M75B-23RL-12CZ-Q6QC",
+                "timestamp": "2025-03-18T13:17:06.764281"
+            }
+        ],
+        "banned": false,
+        "username": "Yansuo"
+    },
+    {
+        "id": 1995760264,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-D276-L28D-M5LA-74NZ",
+                "timestamp": "2025-03-18T13:27:03.056303"
+            },
+            {
+                "product_id": 11,
+                "product_name": "Ipvanish",
+                "price": 0.0,
+                "account_data": "chefadderley2@hotmail.com:Babygirl1242 | Account Type = 2 | Renewal Date = 2025-03-30:00-24-38",
+                "timestamp": "2025-03-18T13:28:43.144511"
+            }
+        ],
+        "banned": false,
+        "username": "hellbatch"
+    },
+    {
+        "id": 704353297,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-D276-L28D-M5LA-74NZ",
+                "timestamp": "2025-03-18T13:29:03.050919"
+            }
+        ],
+        "banned": false,
+        "username": "Fish1501"
+    },
+    {
+        "id": 5323721832,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 11,
+                "product_name": "Ipvanish",
+                "price": 0.0,
+                "account_data": "dlparanoid@hotmail.com:1969Pepsi$ | Account Type = 2 | Renewal Date = 2025-10-21:23-06-01",
+                "timestamp": "2025-03-19T07:45:04.375367"
+            },
+            {
+                "product_id": 14,
+                "product_name": "Canva Edu",
+                "price": 0.0,
+                "account_data": "https://www.canva.com/brand/join?token=TDrZ8q2uVjOYCejOq5lkAA&brandingVariant=edu&referrer=team-invite",
+                "timestamp": "2025-03-19T07:45:32.953520"
+            }
+        ],
+        "banned": false,
+        "username": "Minh_hoang01"
+    },
+    {
+        "id": 516048203,
+        "balance": 0,
+        "purchases": [],
+        "banned": false,
+        "username": "LunaVox"
+    },
+    {
+        "id": 1318672372,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 11,
+                "product_name": "Ipvanish",
+                "price": 0.0,
+                "account_data": "cgneff@hotmail.com:Oreocookie11 | Account Type = 2 | Renewal Date = 2025-06-02:17-21-25",
+                "timestamp": "2025-03-18T13:29:21.832014"
+            }
+        ],
+        "banned": false,
+        "username": "Hnlinhzzz"
+    },
+    {
+        "id": 1306008881,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 11,
+                "product_name": "Ipvanish",
+                "price": 0.0,
+                "account_data": "keisha1204@aol.com:Peaches1! | Account Type = 2 | Renewal Date = 2025-10-24:22-11-17",
+                "timestamp": "2025-03-18T13:29:57.597648"
+            }
+        ],
+        "banned": false,
+        "username": "krant_27"
+    },
+    {
+        "id": 5104556809,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-D276-L28D-M5LA-74NZ",
+                "timestamp": "2025-03-18T13:31:16.611338"
+            }
+        ],
+        "banned": false,
+        "username": "minnyxuilam"
+    },
+    {
+        "id": 5023625307,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-D276-L28D-M5LA-74NZ",
+                "timestamp": "2025-03-18T13:31:57.142612"
+            }
+        ],
+        "banned": false,
+        "username": "TunisP"
+    },
+    {
+        "id": 6052155703,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-D276-L28D-M5LA-74NZ",
+                "timestamp": "2025-03-18T13:31:27.611341"
+            }
+        ],
+        "banned": false,
+        "username": "tuzvn"
+    },
+    {
+        "id": 6016456911,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 11,
+                "product_name": "Ipvanish",
+                "price": 0.0,
+                "account_data": "calhoun.robert@comcast.net:Fortran67! | Account Type = 2 | Renewal Date = 2025-04-26:12-35-20",
+                "timestamp": "2025-03-18T13:31:26.548837"
+            }
+        ],
+        "banned": false,
+        "username": "Hwangg02"
+    },
+    {
+        "id": 549984938,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-D276-L28D-M5LA-74NZ",
+                "timestamp": "2025-03-18T13:31:39.517592"
+            }
+        ],
+        "banned": false,
+        "username": "duytungk87"
+    },
+    {
+        "id": 5002442638,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-D276-L28D-M5LA-74NZ",
+                "timestamp": "2025-03-18T13:31:34.298861"
+            }
+        ],
+        "banned": false,
+        "username": "soybonx"
+    },
+    {
+        "id": 2112500776,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "UDJ7DX-MA7UV2-55LAZW",
+                "timestamp": "2025-03-18T13:31:36.939465"
+            },
+            {
+                "product_id": 11,
+                "product_name": "Ipvanish",
+                "price": 0.0,
+                "account_data": "cbrackett90@yahoo.com:Raiders1990!!! | Account Type = 2 | Renewal Date = 2025-03-26:09-40-48",
+                "timestamp": "2025-03-18T13:32:07.986351"
+            }
+        ],
+        "banned": false,
+        "username": "bkhang27"
+    },
+    {
+        "id": 6717680448,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-D276-L28D-M5LA-74NZ",
+                "timestamp": "2025-03-18T13:31:48.767613"
+            }
+        ],
+        "banned": false
+    },
+    {
+        "id": 6282759508,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-D276-L28D-M5LA-74NZ",
+                "timestamp": "2025-03-18T13:31:51.189464"
+            }
+        ],
+        "banned": false,
+        "username": "tienmp1804"
+    },
+    {
+        "id": 1488962991,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-D276-L28D-M5LA-74NZ",
+                "timestamp": "2025-03-18T13:31:54.095729"
+            }
+        ],
+        "banned": false,
+        "username": "abcdch24"
+    },
+    {
+        "id": 1357759489,
+        "balance": 0,
+        "purchases": [],
+        "banned": false,
+        "username": "dvhoang123"
+    },
+    {
+        "id": 804306545,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 11,
+                "product_name": "Ipvanish",
+                "price": 0.0,
+                "account_data": "garcia.marc@cox.net:W@terbug22 | Account Type = 2 | Renewal Date = 2025-07-12:10-21-49",
+                "timestamp": "2025-03-18T13:31:50.111342"
+            },
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-X7KJ-Q1L5-11RX-G2TB",
+                "timestamp": "2025-03-18T13:32:37.553248"
+            },
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "5457ZR-9YMCGJ-4HU9NA",
+                "timestamp": "2025-03-18T13:36:20.886244"
+            }
+        ],
+        "banned": false,
+        "username": "wgingers"
+    },
+    {
+        "id": 6657086548,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "QYDQP7-Y76HF2-4747YE",
+                "timestamp": "2025-03-18T13:36:41.292479"
+            }
+        ],
+        "banned": false,
+        "username": "Beanben1"
+    },
+    {
+        "id": 5126593565,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 11,
+                "product_name": "Ipvanish",
+                "price": 0.0,
+                "account_data": "mechanixbabe@sbcglobal.net:Busdriver1! | Account Type = 2 | Renewal Date = 2025-06-12:16-18-55",
+                "timestamp": "2025-03-18T13:37:23.723191"
+            }
+        ],
+        "banned": false,
+        "username": "wingjung"
+    },
+    {
+        "id": 1838099854,
+        "balance": 0,
+        "purchases": [],
+        "banned": false,
+        "username": "mrchum88"
+    },
+    {
+        "id": 1110606444,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 14,
+                "product_name": "Canva Edu",
+                "price": 0.0,
+                "account_data": "https://www.canva.com/brand/join?token=TDrZ8q2uVjOYCejOq5lkAA&brandingVariant=edu&referrer=team-invite",
+                "timestamp": "2025-03-18T13:39:55.717798"
+            },
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "UDJ7DX-MA7UV2-55LAZW",
+                "timestamp": "2025-03-18T13:40:33.827176"
+            }
+        ],
+        "banned": false,
+        "username": "SeptVuQ"
+    },
+    {
+        "id": 1508104330,
+        "balance": 0,
+        "purchases": [],
+        "banned": false,
+        "username": "duchech"
+    },
+    {
+        "id": 1706817822,
+        "balance": 0,
+        "purchases": [],
+        "banned": false,
+        "username": "winnieyuen"
+    },
+    {
+        "id": 6033830264,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-X7KJ-Q1L5-11RX-G2TB",
+                "timestamp": "2025-03-18T14:15:30.718471"
+            },
+            {
+                "product_id": 6,
+                "product_name": "Bithub",
+                "price": 0.0,
+                "account_data": "fiyafik789@excederm.com:fiyafik789@",
+                "timestamp": "2025-03-18T14:16:09.050978"
+            },
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "5457ZR-9YMCGJ-4HU9NA",
+                "timestamp": "2025-03-18T14:19:17.857314"
+            },
+            {
+                "product_id": 14,
+                "product_name": "Canva Edu",
+                "price": 0.0,
+                "account_data": "https://www.canva.com/brand/join?token=TDrZ8q2uVjOYCejOq5lkAA&brandingVariant=edu&referrer=team-invite",
+                "timestamp": "2025-03-18T14:20:30.663158"
+            }
+        ],
+        "banned": false,
+        "username": "mmoblackprivate"
+    },
+    {
+        "id": 648603024,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-X7KJ-Q1L5-11RX-G2TB",
+                "timestamp": "2025-03-18T14:19:51.330519"
+            }
+        ],
+        "banned": false,
+        "username": "hyy125"
+    },
+    {
+        "id": 6143382227,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-X7KJ-Q1L5-11RX-G2TB",
+                "timestamp": "2025-03-18T14:45:16.412252"
+            },
+            {
+                "product_id": 11,
+                "product_name": "Ipvanish",
+                "price": 0.0,
+                "account_data": "seddembe@hotmail.com:Honeyboys1# | Account Type = 2 | Renewal Date = 2025-07-11:02-22-39",
+                "timestamp": "2025-03-18T14:45:37.276105"
+            },
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "QYDQP7-Y76HF2-4747YE",
+                "timestamp": "2025-03-18T14:46:14.000530"
+            }
+        ],
+        "banned": false,
+        "username": "vit0c0rleone"
+    },
+    {
+        "id": 5350394274,
+        "balance": 0,
+        "purchases": [],
+        "banned": false,
+        "username": "shelterinn"
+    },
+    {
+        "id": 7487315309,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-X7KJ-Q1L5-11RX-G2TB",
+                "timestamp": "2025-03-18T15:16:12.297006"
+            }
+        ],
+        "banned": false
+    },
+    {
+        "id": 1270066394,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-X7KJ-Q1L5-11RX-G2TB",
+                "timestamp": "2025-03-18T15:56:36.656857"
+            }
+        ],
+        "banned": false,
+        "username": "vernesa2"
+    },
+    {
+        "id": 5758018382,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 14,
+                "product_name": "Canva Edu",
+                "price": 0.0,
+                "account_data": "https://www.canva.com/brand/join?token=TDrZ8q2uVjOYCejOq5lkAA&brandingVariant=edu&referrer=team-invite",
+                "timestamp": "2025-03-18T20:01:19.859519"
+            }
+        ],
+        "banned": false,
+        "username": "Luu_Kien_Minh"
+    },
+    {
+        "id": 1000468538,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "UDJ7DX-MA7UV2-55LAZW",
+                "timestamp": "2025-03-18T20:42:44.797039"
+            }
+        ],
+        "banned": false,
+        "username": "longphung"
+    },
+    {
+        "id": 6677017133,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-X7KJ-Q1L5-11RX-G2TB",
+                "timestamp": "2025-03-18T21:02:26.187645"
+            },
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "5457ZR-9YMCGJ-4HU9NA",
+                "timestamp": "2025-03-18T21:20:53.844178"
+            }
+        ],
+        "banned": false
+    },
+    {
+        "id": 5316022124,
+        "balance": 0,
+        "purchases": [],
+        "banned": false,
+        "username": "nhohuy08"
+    },
+    {
+        "id": 553343379,
+        "balance": 0,
+        "purchases": [],
+        "banned": false,
+        "username": "vndang"
+    },
+    {
+        "id": 979515784,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "QYDQP7-Y76HF2-4747YE",
+                "timestamp": "2025-03-19T01:45:39.344126"
+            },
+            {
+                "product_id": 10,
+                "product_name": "Duolingo Family",
+                "price": 0.0,
+                "account_data": "https://invite.duolingo.com/family-plan/2-X7KJ-Q1L5-11RX-G2TB",
+                "timestamp": "2025-03-19T01:48:42.734744"
+            }
+        ],
+        "banned": false
+    },
+    {
+        "id": 5854056839,
+        "balance": 0,
+        "purchases": [],
+        "banned": false
+    },
+    {
+        "id": 5972715147,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "UDJ7DX-MA7UV2-55LAZW",
+                "timestamp": "2025-03-19T05:53:15.781616"
+            },
+            {
+                "product_id": 14,
+                "product_name": "Canva Edu",
+                "price": 0.0,
+                "account_data": "https://www.canva.com/brand/join?token=TDrZ8q2uVjOYCejOq5lkAA&brandingVariant=edu&referrer=team-invite",
+                "timestamp": "2025-03-19T06:02:38.094123"
+            }
+        ],
+        "banned": false
+    },
+    {
+        "id": 7119843450,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 14,
+                "product_name": "Canva Edu",
+                "price": 0.0,
+                "account_data": "https://www.canva.com/brand/join?token=TDrZ8q2uVjOYCejOq5lkAA&brandingVariant=edu&referrer=team-invite",
+                "timestamp": "2025-03-19T09:42:09.219135"
+            }
+        ],
+        "banned": false
+    },
+    {
+        "id": 1168243787,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "5457ZR-9YMCGJ-4HU9NA",
+                "timestamp": "2025-03-19T10:42:02.547512"
+            }
+        ],
+        "banned": false,
+        "username": "DZ0Phong"
+    },
+    {
+        "id": 5242681551,
+        "balance": 0,
+        "purchases": [],
+        "banned": false
+    },
+    {
+        "id": 7435969482,
+        "balance": 0,
+        "purchases": [],
+        "banned": false
+    },
+    {
+        "id": 1408471038,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "QYDQP7-Y76HF2-4747YE",
+                "timestamp": "2025-03-19T14:01:46.062876"
+            },
+            {
+                "product_id": 11,
+                "product_name": "Ipvanish",
+                "price": 0.0,
+                "account_data": "rudyardb@hotmail.com:D@j@n@e1997 | Account Type = 2 | Renewal Date = 2025-10-16:08-06-18",
+                "timestamp": "2025-03-19T14:09:56.578497"
+            }
+        ],
+        "banned": false,
+        "username": "taikopite"
+    },
+    {
+        "id": 5524136944,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 11,
+                "product_name": "Ipvanish",
+                "price": 0.0,
+                "account_data": "chefadderley2@hotmail.com:Babygirl1242 | Account Type = 2 | Renewal Date = 2025-03-30:00-24-38",
+                "timestamp": "2025-03-19T14:15:31.203524"
+            }
+        ],
+        "banned": false,
+        "username": "p3x342"
+    },
+    {
+        "id": 1371120355,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "UDJ7DX-MA7UV2-55LAZW",
+                "timestamp": "2025-03-19T14:29:09.687882"
+            }
+        ],
+        "banned": false,
+        "username": "oddaltelier77"
+    },
+    {
+        "id": 1688003944,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "5457ZR-9YMCGJ-4HU9NA",
+                "timestamp": "2025-03-19T14:35:03.500368"
+            }
+        ],
+        "banned": false,
+        "username": "kent_dao"
+    },
+    {
+        "id": 1359106281,
+        "balance": 0,
+        "purchases": [
+            {
+                "product_id": 11,
+                "product_name": "Ipvanish",
+                "price": 0.0,
+                "account_data": "cgneff@hotmail.com:Oreocookie11 | Account Type = 2 | Renewal Date = 2025-06-02:17-21-25",
+                "timestamp": "2025-03-19T21:09:46.594916"
+            },
+            {
+                "product_id": 12,
+                "product_name": "HMA VPN",
+                "price": 0.0,
+                "account_data": "QYDQP7-Y76HF2-4747YE",
+                "timestamp": "2025-03-19T21:12:03.329278"
+            }
+        ],
+        "banned": false
+    },
+    {
+        "id": 2103778098,
+        "balance": 1000,
+        "purchases": [],
+        "banned": false
+    }
+]
