@@ -38,8 +38,21 @@ class Database:
     
     def _write_data(self, file_path: str, data: Any) -> None:
         """Ghi dữ liệu vào file JSON"""
-        with open(file_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
+        try:
+            # Đảm bảo thư mục tồn tại
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            
+            # Kiểm tra quyền ghi
+            if os.path.exists(file_path):
+                if not os.access(file_path, os.W_OK):
+                    print(f"Warning: No write permission for file {file_path}")
+            
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
+        except Exception as e:
+            print(f"Error writing to file {file_path}: {e}")
+            import traceback
+            traceback.print_exc()
     
     def load_data(self):
         """Load user data from the configured users file"""
@@ -61,25 +74,10 @@ class Database:
             for user in users:
                 if user.get('id') == user_id:
                     return user
-                
-            # Nếu không tìm thấy user, tạo mới
-            new_user = {
-                'id': user_id,
-                'balance': 0,
-                'purchases': [],
-                'banned': False
-            }
-            self.add_user(new_user)
-            return new_user
+            return None  # Trả về None nếu không tìm thấy người dùng
         except Exception as e:
             print(f"Error getting user: {e}")
-            # Trả về user mặc định để tránh lỗi NoneType
-            return {
-                'id': user_id,
-                'balance': 0,
-                'purchases': [],
-                'banned': False
-            }
+            return None
     
     def add_user(self, user_data: Dict) -> bool:
         """Thêm người dùng mới"""
@@ -88,14 +86,30 @@ class Database:
             if not isinstance(users, list):
                 users = []
             
+            # Thêm log để debug
+            print(f"Adding user: {user_data}")
+            print(f"Current users: {len(users)} users")
+            
             # Check if user already exists
-            if not any(user.get('id') == user_data['id'] for user in users):
-                users.append(user_data)
-                self._write_data(config.USERS_FILE, users)
-                return True
-            return False
+            user_exists = False
+            for user in users:
+                if user.get('id') == user_data['id']:
+                    user_exists = True
+                    break
+                
+            if user_exists:
+                print(f"User already exists with ID: {user_data['id']}")
+                return False
+            
+            # Thêm người dùng mới
+            users.append(user_data)
+            self._write_data(config.USERS_FILE, users)
+            print(f"User added successfully, now {len(users)} users")
+            return True
         except Exception as e:
             print(f"Error adding user: {e}")
+            import traceback
+            traceback.print_exc()
             return False
     
     def update_user(self, user_id: int, update_data: Dict) -> bool:

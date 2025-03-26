@@ -69,17 +69,29 @@ def start_command(bot: TeleBot, message: Message) -> None:
             'purchases': [],
             'created_at': datetime.datetime.now().isoformat()
         }
-        db.add_user(user_data)
-        user = user_data
+        # Thêm người dùng vào database
+        success = db.add_user(user_data)
         
-        # Thông báo cho admin về người dùng mới
-        admin_notification = (
-            f"👤 *Người dùng mới tham gia!*\n\n"
-            f"ID: `{user_id}`\n"
-            f"Username: @{username}\n"
-            f"Thời gian: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-        )
-        notify_admins(bot, admin_notification, parse_mode="Markdown")
+        if success:
+            # Sử dụng user_data thay vì gọi lại get_user
+            user = user_data
+            
+            # Thông báo cho admin về người dùng mới
+            admin_notification = (
+                f"👤 *Người dùng mới tham gia!*\n\n"
+                f"ID: `{user_id}`\n"
+                f"Username: @{username}\n"
+                f"Thời gian: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            )
+            notify_admins(bot, admin_notification, parse_mode="Markdown")
+        else:
+            # Thử lấy lại thông tin người dùng
+            user = db.get_user(user_id)
+            if not user:
+                # Nếu vẫn không tìm thấy, đây là lỗi thực sự
+                logger.error(f"Failed to add new user {username} (ID: {user_id}) to database")
+                bot.send_message(user_id, "Có lỗi xảy ra khi đăng ký tài khoản. Vui lòng thử lại sau.")
+                return
     
     # Kiểm tra xem người dùng có bị cấm không
     if user and user.get('banned', False):
