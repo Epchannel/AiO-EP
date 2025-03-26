@@ -54,5 +54,12 @@
         "description": "VieON VIP là một gói dịch vụ trả phí của VieON, cung cấp cho bạn quyền truy cập vào hàng ngàn kênh truyền hình, phim ảnh, chương trình và các nội dung giải trí độc quyền khác nhau",
         "is_free": true,
         "id": 15
+    },
+    {
+        "name": "Make Pro",
+        "price": 0.0,
+        "description": "Make là nền tảng phát triển tích hợp và tự động hóa hàng đầu giúp các doanh nghiệp trên mọi lĩnh vực trực quan hóa hệ thống và hợp lý hóa quy trình",
+        "is_free": true,
+        "id": 16
     }
 ]
