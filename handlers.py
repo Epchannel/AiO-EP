@@ -8,6 +8,8 @@ import datetime
 from typing import Dict, List, Optional, Any
 import logging
 import time
+import json
+import os
 
 # Thiết lập logging
 logging.basicConfig(
@@ -44,6 +46,11 @@ def register_handlers(bot: TeleBot) -> None:
     bot.register_message_handler(lambda msg: broadcast_command(bot, msg), commands=['broadcast'], func=lambda msg: is_admin(msg.from_user.id))
     bot.register_message_handler(lambda msg: add_admin_command(bot, msg), commands=['add_admin'], func=lambda msg: is_admin(msg.from_user.id))
     
+    # Debug commands
+    bot.register_message_handler(lambda msg: debug_user_command(bot, msg), commands=['debug_user'], func=lambda msg: is_admin(msg.from_user.id))
+    bot.register_message_handler(lambda msg: check_ban_command(bot, msg), commands=['check_ban'], func=lambda msg: is_admin(msg.from_user.id))
+    bot.register_message_handler(lambda msg: force_ban_command(bot, msg), commands=['force_ban'], func=lambda msg: is_admin(msg.from_user.id))
+    
     # Callback query handlers
     bot.register_callback_query_handler(lambda call: handle_callback_query(bot, call), func=lambda call: True)
     
@@ -56,6 +63,9 @@ def start_command(bot: TeleBot, message: Message) -> None:
     username = message.from_user.username or f"user_{user_id}"
     
     logger.info(f"User {username} (ID: {user_id}) started the bot")
+    
+    # Import datetime để sử dụng trong hàm này
+    import datetime
     
     # Kiểm tra xem người dùng đã tồn tại chưa
     user = db.get_user(user_id)
@@ -93,8 +103,11 @@ def start_command(bot: TeleBot, message: Message) -> None:
                 bot.send_message(user_id, "Có lỗi xảy ra khi đăng ký tài khoản. Vui lòng thử lại sau.")
                 return
     
-    # Kiểm tra xem người dùng có bị cấm không
-    if user and user.get('banned', False):
+    # Kiểm tra xem người dùng có bị cấm không - in ra log để debug
+    is_banned = user.get('banned', False)
+    logger.info(f"User {username} (ID: {user_id}) banned status: {is_banned}")
+    
+    if is_banned:
         bot.send_message(user_id, "⛔ Tài khoản của bạn đã bị cấm. Vui lòng liên hệ quản trị viên.")
         return
     
@@ -141,18 +154,22 @@ def help_command(bot: TeleBot, message: Message) -> None:
         "Vui lòng liên hệ quản trị viên để nạp tiền vào tài khoản của bạn."
     )
     
+    # Chỉ hiển thị lệnh quản trị viên cho admin
     if is_admin(user_id):
         help_text += (
             "\n\n*Lệnh quản trị viên:*\n"
-            "/create_product [tên] [giá] - Tạo/sửa sản phẩm\n"
-            "/product_list - Xem danh sách sản phẩm\n"
-            "/upload_product [product_id] - Upload tài khoản cho sản phẩm\n"
-            "/add_money [user_id] [số tiền] - Thêm tiền cho người dùng\n"
-            "/user_list - Xem danh sách người dùng\n"
-            "/ban_user [user_id] - Cấm người dùng\n"
-            "/unban_user [user_id] - Bỏ cấm người dùng\n"
+            "/create\\_product [tên] [giá] - Tạo/sửa sản phẩm\n"
+            "/product\\_list - Xem danh sách sản phẩm\n"
+            "/upload\\_product [product_id] - Upload tài khoản cho sản phẩm\n"
+            "/add\\_money [user_id] [số tiền] - Thêm tiền cho người dùng\n"
+            "/user\\_list - Xem danh sách người dùng\n"
+            "/ban\\_user [user_id] - Cấm người dùng\n"
+            "/unban\\_user [user_id] - Bỏ cấm người dùng\n"
             "/broadcast - Gửi thông báo đến tất cả người dùng\n"
-            "/add_admin [user_id] - Thêm quản trị viên mới"
+            "/add\\_admin [user_id] - Thêm quản trị viên mới\n"
+            "/debug\\_user [user_id] - Xem thông tin debug của người dùng\n"
+            "/check\\_ban [user_id] - Kiểm tra trạng thái cấm của người dùng\n"
+            "/force\\_ban [user_id] - Cấm người dùng (phương pháp thay thế)\n"
         )
     
     bot.send_message(
@@ -427,6 +444,11 @@ def ban_user_command(bot: TeleBot, message: Message) -> None:
     """Xử lý lệnh /ban_user"""
     user_id = message.from_user.id
     
+    # Kiểm tra quyền admin
+    if not is_admin(user_id):
+        bot.send_message(user_id, "❌ Bạn không có quyền thực hiện lệnh này.")
+        return
+    
     # Phân tích cú pháp lệnh
     args = message.text.split()
     
@@ -454,25 +476,42 @@ def ban_user_command(bot: TeleBot, message: Message) -> None:
         bot.send_message(user_id, "❌ Không thể cấm quản trị viên.")
         return
     
-    # Cấm người dùng
+    # Kiểm tra xem người dùng đã bị cấm chưa
+    if target_user.get('banned', False):
+        bot.send_message(user_id, f"❌ Người dùng {target_user.get('username', target_user_id)} đã bị cấm rồi.")
+        return
+    
+    # Sử dụng hàm ban_user từ database
+    logger.info(f"Admin {message.from_user.username} (ID: {user_id}) is banning user {target_user_id}")
     success = db.ban_user(target_user_id)
+    
     if success:
+        # Gửi thông báo thành công
         bot.send_message(
             user_id,
-            f"✅ Đã cấm người dùng {target_user.get('username', target_user_id)}."
+            f"✅ Đã cấm người dùng {target_user.get('username', target_user_id)} thành công."
         )
         
         # Thông báo cho người dùng
-        bot.send_message(
-            target_user_id,
-            "⛔ Tài khoản của bạn đã bị cấm. Vui lòng liên hệ quản trị viên."
-        )
+        try:
+            bot.send_message(
+                target_user_id,
+                "⛔ Tài khoản của bạn đã bị cấm. Vui lòng liên hệ quản trị viên."
+            )
+            logger.info(f"Notification sent to banned user {target_user_id}")
+        except Exception as e:
+            logger.error(f"Không thể gửi thông báo đến người dùng bị cấm: {e}")
     else:
-        bot.send_message(user_id, "❌ Không thể cấm người dùng này.")
+        bot.send_message(user_id, f"❌ Không thể cấm người dùng với ID {target_user_id}. Hãy kiểm tra lại hoặc thử lại sau.")
 
 def unban_user_command(bot: TeleBot, message: Message) -> None:
     """Xử lý lệnh /unban_user"""
     user_id = message.from_user.id
+    
+    # Kiểm tra quyền admin
+    if not is_admin(user_id):
+        bot.send_message(user_id, "❌ Bạn không có quyền thực hiện lệnh này.")
+        return
     
     # Phân tích cú pháp lệnh
     args = message.text.split()
@@ -496,21 +535,33 @@ def unban_user_command(bot: TeleBot, message: Message) -> None:
         bot.send_message(user_id, f"❌ Không tìm thấy người dùng với ID {target_user_id}.")
         return
     
-    # Bỏ cấm người dùng
+    # Kiểm tra xem người dùng có bị cấm không
+    if not target_user.get('banned', False):
+        bot.send_message(user_id, f"❌ Người dùng {target_user.get('username', target_user_id)} không bị cấm.")
+        return
+    
+    # Sử dụng hàm unban_user từ database
+    logger.info(f"Admin {message.from_user.username} (ID: {user_id}) is unbanning user {target_user_id}")
     success = db.unban_user(target_user_id)
+    
     if success:
+        # Gửi thông báo thành công
         bot.send_message(
             user_id,
-            f"✅ Đã bỏ cấm người dùng {target_user.get('username', target_user_id)}."
+            f"✅ Đã bỏ cấm người dùng {target_user.get('username', target_user_id)} thành công."
         )
         
         # Thông báo cho người dùng
-        bot.send_message(
-            target_user_id,
-            "✅ Tài khoản của bạn đã được bỏ cấm. Bạn có thể sử dụng bot bình thường."
-        )
+        try:
+            bot.send_message(
+                target_user_id,
+                "🎉 Tài khoản của bạn đã được bỏ cấm. Bạn có thể sử dụng bot bình thường."
+            )
+            logger.info(f"Notification sent to unbanned user {target_user_id}")
+        except Exception as e:
+            logger.error(f"Không thể gửi thông báo đến người dùng được bỏ cấm: {e}")
     else:
-        bot.send_message(user_id, "❌ Không thể bỏ cấm người dùng này.")
+        bot.send_message(user_id, f"❌ Không thể bỏ cấm người dùng với ID {target_user_id}. Hãy kiểm tra lại hoặc thử lại sau.")
 
 def broadcast_command(bot: TeleBot, message: Message) -> None:
     """Xử lý lệnh /broadcast - Gửi thông báo đến tất cả người dùng"""
@@ -819,50 +870,138 @@ def handle_state(bot: TeleBot, message: Message) -> None:
         display_user_list_page(bot, user_id)
 
     elif state == 'waiting_for_broadcast':
-        # Xử lý nội dung broadcast
-        broadcast_content = text
-        success_count = 0
-        fail_count = 0
-        
-        # Lấy danh sách tất cả người dùng
-        users = db.get_all_users()
-        total_users = len(users)
-        
-        # Gửi tin nhắn đến từng người dùng
-        for user in users:
-            try:
-                target_user_id = user['id']
-                # Bỏ qua người dùng bị cấm
-                if user.get('banned', False):
-                    continue
-                # Gửi tin nhắn
-                bot.send_message(
-                    target_user_id,
-                    f"📢 *Thông báo từ Admin*\n\n{broadcast_content}",
-                    parse_mode="Markdown"
-                )
-                success_count += 1
-                # Tạm dừng ngắn để tránh spam
-                time.sleep(0.1)
-            except Exception as e:
-                logger.error(f"Không thể gửi broadcast đến user {target_user_id}: {e}")
-                fail_count += 1
+        # Xử lý broadcast message
+        broadcast_message = text
         
         # Xóa trạng thái
         del user_states[user_id]
         
-        # Gửi báo cáo kết quả
+        # Hiển thị tin nhắn xác nhận
         bot.send_message(
             user_id,
-            f"📊 *Kết quả gửi thông báo:*\n\n"
-            f"✅ Thành công: {success_count}\n"
-            f"❌ Thất bại: {fail_count}\n"
-            f"📝 Tổng số người dùng: {total_users}\n\n"
-            f"Nội dung đã gửi:\n{broadcast_content}",
-            parse_mode="Markdown",
-            reply_markup=keyboards.back_button("back_to_admin")
+            "🔄 Đang gửi thông báo đến tất cả người dùng... Quá trình này có thể mất một chút thời gian."
         )
-
+        
+        # Thực hiện gửi thông báo
+        users = db.get_all_users()
+        success_count = 0
+        fail_count = 0
+        
+        for user_item in users:
+            try:
+                target_id = user_item.get('id')
+                if target_id != user_id:  # Không gửi cho chính mình
+                    bot.send_message(
+                        target_id,
+                        f"📣 *THÔNG BÁO TỪ QUẢN TRỊ VIÊN*\n\n{broadcast_message}",
+                        parse_mode="Markdown"
+                    )
+                    success_count += 1
+            except Exception as e:
+                logger.error(f"Lỗi khi gửi thông báo đến người dùng {user_item.get('id')}: {e}")
+                fail_count += 1
+        
+        # Gửi thông báo kết quả
+        bot.send_message(
+            user_id,
+            f"✅ Đã gửi thông báo thành công:\n"
+            f"- Số người nhận được: {success_count}\n"
+            f"- Số lỗi: {fail_count}"
+        )
+    
+    elif state == 'waiting_for_ban_user_id':
+        # Xử lý ID người dùng để cấm
+        try:
+            target_user_id = int(text.strip())
+            
+            # Kiểm tra người dùng tồn tại
+            target_user = db.get_user(target_user_id)
+            if not target_user:
+                bot.send_message(user_id, f"❌ Không tìm thấy người dùng với ID {target_user_id}.")
+                return
+            
+            # Kiểm tra nếu là admin
+            if target_user_id in config.ADMIN_IDS:
+                bot.send_message(user_id, "❌ Không thể cấm quản trị viên.")
+                return
+            
+            # Kiểm tra nếu đã bị cấm
+            if target_user.get('banned', False):
+                bot.send_message(user_id, f"❌ Người dùng {target_user.get('username', target_user_id)} đã bị cấm rồi.")
+                return
+            
+            # Cấm người dùng
+            success = db.ban_user(target_user_id)
+            
+            # Xóa trạng thái
+            del user_states[user_id]
+            
+            if success:
+                bot.send_message(
+                    user_id,
+                    f"✅ Đã cấm người dùng {target_user.get('username', target_user_id)} thành công."
+                )
+                
+                # Thông báo cho người dùng bị cấm
+                try:
+                    bot.send_message(
+                        target_user_id,
+                        "⛔ Tài khoản của bạn đã bị cấm. Vui lòng liên hệ quản trị viên."
+                    )
+                except Exception as e:
+                    logger.error(f"Không thể gửi thông báo đến người dùng bị cấm: {e}")
+            else:
+                bot.send_message(
+                    user_id,
+                    f"❌ Không thể cấm người dùng với ID {target_user_id}. Hãy kiểm tra lại hoặc thử lại sau."
+                )
+        except ValueError:
+            bot.send_message(user_id, "❌ ID người dùng phải là một số.")
+    
+    elif state == 'waiting_for_unban_user_id':
+        # Xử lý ID người dùng để bỏ cấm
+        try:
+            target_user_id = int(text.strip())
+            
+            # Kiểm tra người dùng tồn tại
+            target_user = db.get_user(target_user_id)
+            if not target_user:
+                bot.send_message(user_id, f"❌ Không tìm thấy người dùng với ID {target_user_id}.")
+                return
+            
+            # Kiểm tra nếu chưa bị cấm
+            if not target_user.get('banned', False):
+                bot.send_message(user_id, f"❌ Người dùng {target_user.get('username', target_user_id)} không bị cấm.")
+                return
+            
+            # Bỏ cấm người dùng
+            success = db.unban_user(target_user_id)
+            
+            # Xóa trạng thái
+            del user_states[user_id]
+            
+            if success:
+                bot.send_message(
+                    user_id,
+                    f"✅ Đã bỏ cấm người dùng {target_user.get('username', target_user_id)} thành công."
+                )
+                
+                # Thông báo cho người dùng được bỏ cấm
+                try:
+                    bot.send_message(
+                        target_user_id,
+                        "🎉 Tài khoản của bạn đã được bỏ cấm. Bạn có thể sử dụng bot bình thường."
+                    )
+                except Exception as e:
+                    logger.error(f"Không thể gửi thông báo đến người dùng được bỏ cấm: {e}")
+            else:
+                bot.send_message(
+                    user_id,
+                    f"❌ Không thể bỏ cấm người dùng với ID {target_user_id}. Hãy kiểm tra lại hoặc thử lại sau."
+                )
+        except ValueError:
+            bot.send_message(user_id, "❌ ID người dùng phải là một số.")
+    
     # Thêm các trạng thái khác ở đây
 
 def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
@@ -882,6 +1021,9 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
     # Thêm các hàm tiện ích
     def get_statistics():
         """Lấy thống kê hệ thống"""
+        # Import datetime trong phạm vi hàm này
+        import datetime
+        
         users = db.get_all_users()
         total_users = len(users)
         
@@ -918,6 +1060,9 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
     def process_purchase(user_id, product_id):
         """Xử lý quá trình mua hàng"""
         try:
+            # Import datetime ở đầu hàm để đảm bảo nó có sẵn trong phạm vi của hàm
+            import datetime
+            
             user = db.get_user(user_id)
             if not user:
                 # Tạo user mới nếu không tồn tại
@@ -1242,13 +1387,17 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
                 reply_markup=keyboards.back_button()
             )
             
+            
             # Gửi thông báo cho admin về giao dịch thành công
+            # Import datetime
+            import datetime
+            current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             admin_notification = (
                 f"💰 *Giao dịch mới thành công!*\n\n"
                 f"Người dùng: @{username} (ID: `{user_id}`)\n"
                 f"Sản phẩm: {result['product_name']}\n"
                 f"Giá: {result['price']:,} {config.CURRENCY}\n"
-                f"Thời gian: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+                f"Thời gian: {current_time}"
             )
             notify_admins(bot, admin_notification, parse_mode="Markdown")
         else:
@@ -1292,11 +1441,62 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
         )
     
     elif data == "back_to_user_management":
+        # Quay lại menu quản lý người dùng
         bot.edit_message_text(
             "👥 Quản lý người dùng",
             call.message.chat.id,
             call.message.message_id,
             reply_markup=keyboards.user_management()
+        )
+    
+    elif data == "ban_user" and is_admin(user_id):
+        # Lưu trạng thái chờ nhập ID người dùng để cấm
+        user_states[user_id] = {
+            'state': 'waiting_for_ban_user_id',
+            'data': {}
+        }
+        
+        bot.send_message(
+            user_id,
+            "🚫 *Cấm người dùng*\n\n"
+            "Vui lòng nhập ID người dùng bạn muốn cấm.\n"
+            "Ví dụ: `123456789`\n\n"
+            "Gửi /cancel để hủy.",
+            parse_mode="Markdown"
+        )
+        
+        # Sửa tin nhắn hiện tại để hiển thị trạng thái
+        bot.edit_message_text(
+            "👥 Quản lý người dùng\n\n"
+            "📝 Đang chờ nhập ID người dùng để cấm...",
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=keyboards.back_button("back_to_user_management")
+        )
+    
+    elif data == "unban_user" and is_admin(user_id):
+        # Lưu trạng thái chờ nhập ID người dùng để bỏ cấm
+        user_states[user_id] = {
+            'state': 'waiting_for_unban_user_id',
+            'data': {}
+        }
+        
+        bot.send_message(
+            user_id,
+            "✅ *Bỏ cấm người dùng*\n\n"
+            "Vui lòng nhập ID người dùng bạn muốn bỏ cấm.\n"
+            "Ví dụ: `123456789`\n\n"
+            "Gửi /cancel để hủy.",
+            parse_mode="Markdown"
+        )
+        
+        # Sửa tin nhắn hiện tại để hiển thị trạng thái
+        bot.edit_message_text(
+            "👥 Quản lý người dùng\n\n"
+            "📝 Đang chờ nhập ID người dùng để bỏ cấm...",
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=keyboards.back_button("back_to_user_management")
         )
     
     elif data == "back_to_product_list":
@@ -1383,20 +1583,93 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
         if target_user:
             # Không cho phép cấm admin
             if is_admin(target_user_id):
-                bot.answer_callback_query(call.id, "⛔ Không thể cấm quản trị viên khác.")
+                bot.answer_callback_query(call.id, "⛔ Không thể cấm quản trị viên khác.", show_alert=True)
                 return
             
-            # Cấm người dùng
-            db.update_user(target_user_id, {'banned': True})
+            # Kiểm tra nếu người dùng đã bị cấm
+            if target_user.get('banned', False):
+                bot.answer_callback_query(call.id, "❌ Người dùng này đã bị cấm rồi.", show_alert=True)
+                return
             
-            bot.edit_message_text(
-                f"✅ Đã cấm người dùng thành công!\n\n"
-                f"ID: {target_user['id']}\n"
-                f"Username: @{target_user.get('username', 'Không có')}",
-                call.message.chat.id,
-                call.message.message_id,
-                reply_markup=keyboards.back_button("back_to_user_list")
-            )
+            # Cấm người dùng với phương pháp trực tiếp nhất
+            logger.info(f"Admin {username} (ID: {user_id}) is banning user {target_user_id} via callback")
+            
+            try:
+                # Đọc dữ liệu hiện tại
+                import json
+                import os
+                
+                users_file_path = config.USERS_FILE
+                logger.info(f"Reading users data from {users_file_path}")
+                
+                if not os.path.exists(users_file_path):
+                    logger.error(f"Users file does not exist: {users_file_path}")
+                    bot.answer_callback_query(call.id, "❌ File dữ liệu người dùng không tồn tại.", show_alert=True)
+                    return
+                
+                # Đọc dữ liệu trực tiếp từ file
+                try:
+                    with open(users_file_path, 'r', encoding='utf-8') as file:
+                        users_data = json.load(file)
+                        logger.info(f"Successfully read users data. Found {len(users_data)} users.")
+                except json.JSONDecodeError as e:
+                    logger.error(f"JSON decode error: {e}")
+                    bot.answer_callback_query(call.id, "❌ Lỗi định dạng file dữ liệu.", show_alert=True)
+                    return
+                except Exception as e:
+                    logger.error(f"Error reading users file: {e}")
+                    bot.answer_callback_query(call.id, f"❌ Lỗi khi đọc file dữ liệu: {str(e)}", show_alert=True)
+                    return
+                
+                # Tìm và cập nhật người dùng
+                user_found = False
+                for i, user in enumerate(users_data):
+                    if user.get('id') == target_user_id:
+                        logger.info(f"Found user {target_user_id} at index {i}")
+                        users_data[i]['banned'] = True
+                        user_found = True
+                        break
+                
+                if not user_found:
+                    logger.error(f"User {target_user_id} not found in users data")
+                    bot.answer_callback_query(call.id, f"❌ Không tìm thấy người dùng với ID {target_user_id} trong dữ liệu.", show_alert=True)
+                    return
+                
+                # Ghi dữ liệu trở lại file
+                try:
+                    with open(users_file_path, 'w', encoding='utf-8') as file:
+                        json.dump(users_data, file, ensure_ascii=False, indent=2)
+                        logger.info(f"Successfully wrote updated data to {users_file_path}")
+                except Exception as e:
+                    logger.error(f"Error writing to users file: {e}")
+                    bot.answer_callback_query(call.id, f"❌ Lỗi khi ghi file dữ liệu: {str(e)}", show_alert=True)
+                    return
+                
+                # Hiển thị thông báo thành công
+                bot.edit_message_text(
+                    f"✅ Đã cấm người dùng thành công!\n\n"
+                    f"ID: {target_user['id']}\n"
+                    f"Username: @{target_user.get('username', 'Không có')}",
+                    call.message.chat.id,
+                    call.message.message_id,
+                    reply_markup=keyboards.back_button("back_to_user_list")
+                )
+                
+                # Thông báo cho người dùng
+                try:
+                    bot.send_message(
+                        target_user_id,
+                        "⛔ Tài khoản của bạn đã bị cấm. Vui lòng liên hệ quản trị viên."
+                    )
+                    logger.info(f"Notification sent to banned user {target_user_id}")
+                except Exception as e:
+                    logger.error(f"Không thể gửi thông báo đến người dùng bị cấm: {e}")
+            
+            except Exception as e:
+                logger.error(f"Unexpected error in ban user callback: {e}", exc_info=True)
+                bot.answer_callback_query(call.id, f"❌ Lỗi không xác định: {str(e)}", show_alert=True)
+        else:
+            bot.answer_callback_query(call.id, f"❌ Không tìm thấy người dùng với ID {target_user_id}.", show_alert=True)
     
     elif data.startswith("unban_user_") and is_admin(user_id):
         # Bỏ cấm người dùng
@@ -1404,17 +1677,57 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
         target_user = db.get_user(target_user_id)
         
         if target_user:
-            # Bỏ cấm người dùng
-            db.update_user(target_user_id, {'banned': False})
+            # Kiểm tra nếu người dùng không bị cấm
+            if not target_user.get('banned', False):
+                bot.answer_callback_query(call.id, "❌ Người dùng này không bị cấm.", show_alert=True)
+                return
             
-            bot.edit_message_text(
-                f"✅ Đã bỏ cấm người dùng thành công!\n\n"
-                f"ID: {target_user['id']}\n"
-                f"Username: @{target_user.get('username', 'Không có')}",
-                call.message.chat.id,
-                call.message.message_id,
-                reply_markup=keyboards.back_button("back_to_user_list")
-            )
+            # Bỏ cấm người dùng sử dụng phương pháp trực tiếp nhất
+            logger.info(f"Admin {username} (ID: {user_id}) is unbanning user {target_user_id} via callback")
+            
+            try:
+                # Đọc dữ liệu người dùng
+                users = db._read_data(config.USERS_FILE)
+                
+                # Cập nhật trạng thái banned
+                user_found = False
+                for i, user in enumerate(users):
+                    if user.get('id') == target_user_id:
+                        users[i]['banned'] = False
+                        user_found = True
+                        break
+                
+                if not user_found:
+                    bot.answer_callback_query(call.id, "❌ Không thể tìm thấy người dùng trong cơ sở dữ liệu.", show_alert=True)
+                    return
+                
+                # Lưu dữ liệu đã cập nhật
+                db._write_data(config.USERS_FILE, users)
+                
+                # Hiển thị thông báo thành công
+                bot.edit_message_text(
+                    f"✅ Đã bỏ cấm người dùng thành công!\n\n"
+                    f"ID: {target_user['id']}\n"
+                    f"Username: @{target_user.get('username', 'Không có')}",
+                    call.message.chat.id,
+                    call.message.message_id,
+                    reply_markup=keyboards.back_button("back_to_user_list")
+                )
+                
+                # Thông báo cho người dùng
+                try:
+                    bot.send_message(
+                        target_user_id,
+                        "✅ Tài khoản của bạn đã được bỏ cấm. Bạn có thể sử dụng bot bình thường."
+                    )
+                except Exception as e:
+                    logger.error(f"Không thể gửi thông báo đến người dùng được bỏ cấm: {e}")
+            
+            except Exception as e:
+                logger.error(f"Error unbanning user: {e}")
+                bot.answer_callback_query(call.id, f"❌ Đã xảy ra lỗi khi bỏ cấm người dùng: {str(e)}", show_alert=True)
+        else:
+            bot.answer_callback_query(call.id, f"❌ Không tìm thấy người dùng với ID {target_user_id}.", show_alert=True)
     
     elif data.startswith("upload_product_") and is_admin(user_id):
         # Upload tài khoản cho sản phẩm
@@ -1671,6 +1984,131 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
         }
         display_user_list_page(bot, user_id, call.message.message_id)
     
+    elif data == "my_purchases":
+        # Hiển thị danh sách tài khoản đã mua
+        user = db.get_user(user_id)
+        purchases = user.get('purchases', [])
+        
+        if not purchases:
+            bot.edit_message_text(
+                "🛒 Bạn chưa mua tài khoản nào.",
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=keyboards.back_button()
+            )
+            return
+        
+        # Lưu trạng thái để xử lý phân trang
+        user_states[user_id] = {
+            'state': 'viewing_purchases',
+            'page': 0,
+            'purchases': purchases
+        }
+        
+        bot.edit_message_text(
+            "🛒 *Tài khoản đã mua*\n\nChọn một tài khoản để xem chi tiết:",
+            call.message.chat.id,
+            call.message.message_id,
+            parse_mode="Markdown",
+            reply_markup=keyboards.purchase_history_keyboard(purchases)
+        )
+    
+    elif data.startswith("view_purchase_"):
+        # Xem chi tiết tài khoản đã mua
+        purchase_idx = int(data.split("_")[2])
+        
+        # Lấy thông tin mua hàng từ trạng thái người dùng
+        state = user_states.get(user_id, {})
+        purchases = state.get('purchases', [])
+        
+        if not purchases or purchase_idx >= len(purchases):
+            # Nếu không có thông tin trong trạng thái, lấy từ cơ sở dữ liệu
+            user = db.get_user(user_id)
+            purchases = user.get('purchases', [])
+        
+        if purchase_idx >= len(purchases):
+            bot.answer_callback_query(call.id, "❌ Không tìm thấy thông tin tài khoản.", show_alert=True)
+            return
+        
+        purchase = purchases[purchase_idx]
+        product_name = purchase.get('product_name', 'Không tên')
+        price = purchase.get('price', 0)
+        account_info = purchase.get('account_data', 'Không có thông tin')
+        
+        # Định dạng thời gian mua
+        timestamp = purchase.get('timestamp', '')
+        if timestamp:
+            try:
+                import datetime
+                dt = datetime.datetime.fromisoformat(timestamp)
+                date_str = dt.strftime('%d/%m/%Y %H:%M:%S')
+            except:
+                date_str = 'Không rõ'
+        else:
+            date_str = 'Không rõ'
+        
+        bot.edit_message_text(
+            f"🛒 *Chi tiết tài khoản đã mua*\n\n"
+            f"Sản phẩm: {product_name}\n"
+            f"Giá: {price:,} {config.CURRENCY}\n"
+            f"Ngày mua: {date_str}\n\n"
+            f"📝 *Thông tin tài khoản:*\n"
+            f"`{account_info}`",
+            call.message.chat.id,
+            call.message.message_id,
+            parse_mode="Markdown",
+            reply_markup=keyboards.back_button("back_to_purchases")
+        )
+    
+    elif data == "back_to_purchases":
+        # Quay lại danh sách tài khoản đã mua
+        state = user_states.get(user_id, {})
+        page = state.get('page', 0)
+        purchases = state.get('purchases', [])
+        
+        if not purchases:
+            # Nếu không có thông tin trong trạng thái, lấy từ cơ sở dữ liệu
+            user = db.get_user(user_id)
+            purchases = user.get('purchases', [])
+        
+        bot.edit_message_text(
+            "🛒 *Tài khoản đã mua*\n\nChọn một tài khoản để xem chi tiết:",
+            call.message.chat.id,
+            call.message.message_id,
+            parse_mode="Markdown",
+            reply_markup=keyboards.purchase_history_keyboard(purchases, page)
+        )
+    
+    elif data.startswith("purchase_page_"):
+        # Xử lý phân trang danh sách tài khoản đã mua
+        page = int(data.split("_")[2])
+        
+        state = user_states.get(user_id, {})
+        purchases = state.get('purchases', [])
+        
+        if not purchases:
+            # Nếu không có thông tin trong trạng thái, lấy từ cơ sở dữ liệu
+            user = db.get_user(user_id)
+            purchases = user.get('purchases', [])
+        
+        # Cập nhật trang hiện tại
+        if user_id in user_states:
+            user_states[user_id]['page'] = page
+        else:
+            user_states[user_id] = {
+                'state': 'viewing_purchases',
+                'page': page,
+                'purchases': purchases
+            }
+        
+        bot.edit_message_text(
+            "🛒 *Tài khoản đã mua*\n\nChọn một tài khoản để xem chi tiết:",
+            call.message.chat.id,
+            call.message.message_id,
+            parse_mode="Markdown",
+            reply_markup=keyboards.purchase_history_keyboard(purchases, page)
+        )
+    
     # Đánh dấu callback đã được xử lý
     bot.answer_callback_query(call.id)
 
@@ -1760,3 +2198,94 @@ def notify_admins(bot: TeleBot, message: str, parse_mode: str = None) -> None:
             bot.send_message(admin_id, message, parse_mode=parse_mode)
         except Exception as e:
             logger.error(f"Không thể gửi thông báo đến admin {admin_id}: {e}")
+
+def debug_user_command(bot: TeleBot, message: Message) -> None:
+    """Lệnh debug để kiểm tra dữ liệu người dùng"""
+    user_id = message.from_user.id
+    
+    if not is_admin(user_id):
+        return
+    
+    args = message.text.split()
+    if len(args) < 2:
+        bot.send_message(user_id, "Sử dụng: /debug_user [user_id]")
+        return
+    
+    try:
+        target_user_id = int(args[1])
+        user = db.get_user(target_user_id)
+        if user:
+            bot.send_message(user_id, f"User data: {json.dumps(user, indent=2)}")
+        else:
+            bot.send_message(user_id, f"User with ID {target_user_id} not found")
+    except Exception as e:
+        bot.send_message(user_id, f"Error: {str(e)}")
+
+def check_ban_command(bot: TeleBot, message: Message) -> None:
+    """Lệnh để kiểm tra trạng thái cấm của người dùng"""
+    user_id = message.from_user.id
+    
+    if not is_admin(user_id):
+        bot.send_message(user_id, "❌ Bạn không có quyền thực hiện lệnh này.")
+        return
+    
+    args = message.text.split()
+    if len(args) < 2:
+        bot.send_message(user_id, "Sử dụng: /check_ban [user_id]")
+        return
+    
+    try:
+        target_user_id = int(args[1])
+        user = db.get_user(target_user_id)
+        if user:
+            is_banned = is_user_banned(target_user_id)
+            bot.send_message(user_id, f"User {target_user_id} banned status: {is_banned}")
+        else:
+            bot.send_message(user_id, f"User with ID {target_user_id} not found")
+    except Exception as e:
+        bot.send_message(user_id, f"Error: {str(e)}")
+
+def is_user_banned(user_id: int) -> bool:
+    """Kiểm tra xem người dùng có bị cấm không"""
+    return db.is_user_banned(user_id)
+
+def force_ban_command(bot: TeleBot, message: Message) -> None:
+    """Lệnh cấm người dùng trực tiếp"""
+    user_id = message.from_user.id
+    
+    if not is_admin(user_id):
+        bot.send_message(user_id, "❌ Bạn không có quyền thực hiện lệnh này.")
+        return
+    
+    args = message.text.split()
+    if len(args) < 2:
+        bot.send_message(user_id, "Sử dụng: /force_ban [user_id]")
+        return
+    
+    try:
+        target_user_id = int(args[1])
+        
+        # Kiểm tra người dùng tồn tại
+        target_user = db.get_user(target_user_id)
+        if not target_user:
+            bot.send_message(user_id, f"❌ Không tìm thấy người dùng với ID {target_user_id}.")
+            return
+        
+        # Sử dụng hàm ban_user từ database
+        success = db.ban_user(target_user_id)
+        
+        if success:
+            bot.send_message(user_id, f"✅ Đã cấm người dùng {target_user_id} thành công!")
+            
+            # Thông báo cho người dùng
+            try:
+                bot.send_message(
+                    target_user_id,
+                    "⛔ Tài khoản của bạn đã bị cấm. Vui lòng liên hệ quản trị viên."
+                )
+            except Exception:
+                pass  # Không cần xử lý ngoại lệ ở đây
+        else:
+            bot.send_message(user_id, f"❌ Không thể cấm người dùng với ID {target_user_id}.")
+    except Exception as e:
+        bot.send_message(user_id, f"Error: {str(e)}")

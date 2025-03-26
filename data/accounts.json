@@ -857,27 +857,27 @@
     {
         "product_id": 15,
         "data": "0911963619:123456 | Tên Gói = VIP - 06 Tháng | AutoRenew = False | ExpiryDate = 2025-07-14 | Còn xem được = 117 | Payment = Voucher | HitTime = 3/18/2025 7:53 AM",
-        "sold": false
+        "sold": true
     },
     {
         "product_id": 15,
         "data": "0976155220:123456 | Tên Gói = VIP - 06 Tháng | AutoRenew = False | ExpiryDate = 2025-03-22 | Còn xem được = 3 | Payment = Voucher | HitTime = 3/18/2025 7:53 AM",
-        "sold": false
+        "sold": true
     },
     {
         "product_id": 15,
         "data": "0979988369:123456 | Tên Gói = VIP - 03 Tháng | AutoRenew = False | ExpiryDate = 2025-04-10 | Còn xem được = 22 | Payment = Voucher | HitTime = 3/18/2025 7:53 AM",
-        "sold": false
+        "sold": true
     },
     {
         "product_id": 15,
         "data": "0944100081:123456 | Tên Gói = VIP - 03 Tháng | AutoRenew = False | ExpiryDate = 2025-03-30 | Còn xem được = 11 | Payment = Voucher | HitTime = 3/18/2025 7:53 AM",
-        "sold": false
+        "sold": true
     },
     {
         "product_id": 15,
         "data": "0931343523:123456 | Tên Gói = VIP - 06 Tháng | AutoRenew = False | ExpiryDate = 2025-05-28 | Còn xem được = 70 | Payment = Voucher | HitTime = 3/18/2025 7:53 AM",
-        "sold": false
+        "sold": true
     },
     {
         "product_id": 15,

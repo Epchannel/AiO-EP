@@ -115,14 +115,14 @@
                 "timestamp": "2025-03-22T19:24:57.144070"
             }
         ],
-        "banned": false
+        "banned": true
     },
     {
         "id": 7734704088,
         "username": "user_7734704088",
         "balance": 0,
         "purchases": [],
-        "banned": false
+        "banned": true
     },
     {
         "id": 1682663961,
@@ -378,7 +378,7 @@
         "username": "life_technology_68",
         "balance": 0,
         "purchases": [],
-        "banned": false
+        "banned": true
     },
     {
         "id": 843206275,
@@ -396,7 +396,7 @@
     },
     {
         "id": 1770812755,
-        "username": "chrisgbn",
+        "username": "chgbn",
         "balance": 0,
         "purchases": [
             {
@@ -472,14 +472,14 @@
         "username": "nguyenduchoai",
         "balance": 0,
         "purchases": [],
-        "banned": false
+        "banned": true
     },
     {
         "id": 5661118546,
         "username": "anhnt1808",
         "balance": 0,
         "purchases": [],
-        "banned": false
+        "banned": true
     },
     {
         "id": 1615605986,
@@ -631,7 +631,7 @@
         "username": "user_1238737810",
         "balance": 0,
         "purchases": [],
-        "banned": false
+        "banned": true
     },
     {
         "id": 1976421395,
@@ -820,7 +820,7 @@
         "username": "BaoLePhuong",
         "balance": 0,
         "purchases": [],
-        "banned": false
+        "banned": true
     },
     {
         "id": 6698471716,
@@ -1072,7 +1072,15 @@
         "id": 1380593869,
         "username": "dangtranthaison",
         "balance": 0,
-        "purchases": [],
+        "purchases": [
+            {
+                "product_id": 15,
+                "product_name": "Vieon Premium",
+                "price": 0.0,
+                "account_data": "0944100081:123456 | Tên Gói = VIP - 03 Tháng | AutoRenew = False | ExpiryDate = 2025-03-30 | Còn xem được = 11 | Payment = Voucher | HitTime = 3/18/2025 7:53 AM",
+                "timestamp": "2025-03-26T10:24:20.961566"
+            }
+        ],
         "banned": false
     },
     {
@@ -1142,7 +1150,7 @@
     },
     {
         "id": 1088826189,
-        "username": "risketlucio",
+        "username": "ketlucio",
         "balance": 0,
         "purchases": [
             {
@@ -1369,7 +1377,15 @@
         "id": 6016456911,
         "username": "Hwangg02",
         "balance": 0,
-        "purchases": [],
+        "purchases": [
+            {
+                "product_id": 15,
+                "product_name": "Vieon Premium",
+                "price": 0.0,
+                "account_data": "0931343523:123456 | Tên Gói = VIP - 06 Tháng | AutoRenew = False | ExpiryDate = 2025-05-28 | Còn xem được = 70 | Payment = Voucher | HitTime = 3/18/2025 7:53 AM",
+                "timestamp": "2025-03-26T10:28:28.546944"
+            }
+        ],
         "banned": false
     },
     {
@@ -1390,7 +1406,7 @@
         "id": 846603464,
         "username": "OG3787",
         "balance": 0,
-        "banned": false,
+        "banned": true,
         "purchases": [],
         "created_at": "2025-03-26T09:34:30.568319"
     },
@@ -1399,7 +1415,15 @@
         "username": "ngochacoder",
         "balance": 0,
         "banned": false,
-        "purchases": [],
+        "purchases": [
+            {
+                "product_id": 15,
+                "product_name": "Vieon Premium",
+                "price": 0.0,
+                "account_data": "0979988369:123456 | Tên Gói = VIP - 03 Tháng | AutoRenew = False | ExpiryDate = 2025-04-10 | Còn xem được = 22 | Payment = Voucher | HitTime = 3/18/2025 7:53 AM",
+                "timestamp": "2025-03-26T10:15:38.513479"
+            }
+        ],
         "created_at": "2025-03-26T09:40:13.281100"
     }
 ]

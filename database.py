@@ -114,13 +114,41 @@ class Database:
     
     def update_user(self, user_id: int, update_data: Dict) -> bool:
         """Cập nhật thông tin người dùng"""
-        users = self._read_data(config.USERS_FILE)
-        for i, user in enumerate(users):
-            if user.get('id') == user_id:
-                users[i].update(update_data)
-                self._write_data(config.USERS_FILE, users)
-                return True
-        return False
+        try:
+            users = self._read_data(config.USERS_FILE)
+            
+            # Thêm log để debug
+            print(f"Updating user {user_id} with data: {update_data}")
+            print(f"Current users: {len(users)} users")
+            
+            found = False
+            for i, user in enumerate(users):
+                if user.get('id') == user_id:
+                    # Thêm log để debug
+                    print(f"Found user at index {i}: {user}")
+                    
+                    # Cập nhật thông tin người dùng
+                    users[i].update(update_data)
+                    
+                    # Thêm log để debug
+                    print(f"Updated user: {users[i]}")
+                    
+                    found = True
+                    break
+            
+            if not found:
+                print(f"User with ID {user_id} not found")
+                return False
+            
+            # Lưu lại dữ liệu
+            self._write_data(config.USERS_FILE, users)
+            print(f"Users data saved successfully")
+            return True
+        except Exception as e:
+            print(f"Error updating user: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
     
     def get_all_users(self) -> List[Dict]:
         """Lấy danh sách tất cả người dùng"""
@@ -128,11 +156,57 @@ class Database:
     
     def ban_user(self, user_id: int) -> bool:
         """Cấm người dùng"""
-        return self.update_user(user_id, {'banned': True})
+        try:
+            print(f"Banning user {user_id}")
+            users = self._read_data(config.USERS_FILE)
+            
+            found = False
+            for i, user in enumerate(users):
+                if user.get('id') == user_id:
+                    users[i]['banned'] = True
+                    found = True
+                    break
+            
+            if not found:
+                print(f"User with ID {user_id} not found")
+                return False
+            
+            # Lưu lại dữ liệu
+            self._write_data(config.USERS_FILE, users)
+            print(f"User {user_id} banned successfully")
+            return True
+        except Exception as e:
+            print(f"Error banning user: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
     
     def unban_user(self, user_id: int) -> bool:
         """Bỏ cấm người dùng"""
-        return self.update_user(user_id, {'banned': False})
+        try:
+            print(f"Unbanning user {user_id}")
+            users = self._read_data(config.USERS_FILE)
+            
+            found = False
+            for i, user in enumerate(users):
+                if user.get('id') == user_id:
+                    users[i]['banned'] = False
+                    found = True
+                    break
+            
+            if not found:
+                print(f"User with ID {user_id} not found")
+                return False
+            
+            # Lưu lại dữ liệu
+            self._write_data(config.USERS_FILE, users)
+            print(f"User {user_id} unbanned successfully")
+            return True
+        except Exception as e:
+            print(f"Error unbanning user: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
     
     def add_money(self, user_id: int, amount: float) -> bool:
         """Thêm tiền cho người dùng"""
@@ -289,4 +363,11 @@ class Database:
         """Cập nhật một cài đặt"""
         settings = self.get_settings()
         settings[key] = value
-        self._write_data(config.SETTINGS_FILE, settings) 
+        self._write_data(config.SETTINGS_FILE, settings)
+    
+    def is_user_banned(self, user_id: int) -> bool:
+        """Kiểm tra xem người dùng có bị cấm không"""
+        user = self.get_user(user_id)
+        if user:
+            return user.get('banned', False)
+        return False 

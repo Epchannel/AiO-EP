@@ -29,6 +29,10 @@ def main_menu(is_admin: bool = False) -> InlineKeyboardMarkup:
         InlineKeyboardButton("💰 Số dư", callback_data="balance")
     )
     
+    markup.row(
+        InlineKeyboardButton("🛒 Tài khoản đã mua", callback_data="my_purchases")
+    )
+    
     if is_admin:
         markup.row(
             InlineKeyboardButton("⚙️ Quản trị viên", callback_data="admin_panel")
@@ -278,5 +282,56 @@ def user_list_navigation_keyboard(current_page: int, total_pages: int, search_qu
     
     # Nút quay lại
     markup.add(InlineKeyboardButton("🔙 Quay lại", callback_data="admin_panel"))
+    
+    return markup
+
+def purchase_history_keyboard(purchases: List[Dict[str, Any]], page: int = 0) -> InlineKeyboardMarkup:
+    """Tạo bàn phím danh sách tài khoản đã mua"""
+    markup = InlineKeyboardMarkup()
+    
+    # Hiển thị 5 tài khoản mỗi trang
+    items_per_page = 5
+    start_idx = page * items_per_page
+    end_idx = min(start_idx + items_per_page, len(purchases))
+    
+    for i in range(start_idx, end_idx):
+        purchase = purchases[i]
+        product_name = purchase.get('product_name', 'Không tên')
+        purchase_id = i  # Sử dụng index làm ID
+        
+        # Hiển thị tên sản phẩm và thời gian mua
+        timestamp = purchase.get('timestamp', '')
+        if timestamp:
+            try:
+                import datetime
+                dt = datetime.datetime.fromisoformat(timestamp)
+                date_str = dt.strftime('%d/%m/%Y')
+            except:
+                date_str = ''
+        else:
+            date_str = ''
+        
+        button_text = f"{product_name}"
+        if date_str:
+            button_text += f" ({date_str})"
+        
+        markup.row(InlineKeyboardButton(
+            button_text, 
+            callback_data=f"view_purchase_{purchase_id}"
+        ))
+    
+    # Nút điều hướng trang
+    nav_buttons = []
+    if page > 0:
+        nav_buttons.append(InlineKeyboardButton("⬅️ Trước", callback_data=f"purchase_page_{page-1}"))
+    
+    if end_idx < len(purchases):
+        nav_buttons.append(InlineKeyboardButton("➡️ Sau", callback_data=f"purchase_page_{page+1}"))
+    
+    if nav_buttons:
+        markup.row(*nav_buttons)
+    
+    # Nút quay lại
+    markup.row(InlineKeyboardButton("🔙 Quay lại", callback_data="back_to_main"))
     
     return markup 
