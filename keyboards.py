@@ -26,11 +26,7 @@ def main_menu(is_admin: bool = False) -> InlineKeyboardMarkup:
     
     markup.row(
         InlineKeyboardButton("📚 Hướng dẫn", callback_data="tutorial"),
-        InlineKeyboardButton("💰 Số dư", callback_data="balance")
-    )
-    
-    markup.row(
-        InlineKeyboardButton("🛒 Tài khoản đã mua", callback_data="my_purchases")
+        InlineKeyboardButton("👤 Tài khoản", callback_data="account_menu")
     )
     
     if is_admin:
@@ -332,6 +328,21 @@ def purchase_history_keyboard(purchases: List[Dict[str, Any]], page: int = 0) ->
         markup.row(*nav_buttons)
     
     # Nút quay lại
-    markup.row(InlineKeyboardButton("🔙 Quay lại", callback_data="back_to_main"))
+    markup.row(InlineKeyboardButton("🔙 Quay lại", callback_data="account_menu"))
     
+    return markup
+
+def account_menu() -> InlineKeyboardMarkup:
+    """Tạo bàn phím menu tài khoản"""
+    markup = InlineKeyboardMarkup()
+    markup.row(
+        InlineKeyboardButton("💰 Số dư", callback_data="balance"),
+        InlineKeyboardButton("🛒 Tài khoản đã mua", callback_data="my_purchases")
+    )
+    markup.row(
+        InlineKeyboardButton("💸 Nạp tiền", callback_data="deposit_money")
+    )
+    markup.row(
+        InlineKeyboardButton("🔙 Quay lại menu chính", callback_data="back_to_main")
+    )
     return markup 

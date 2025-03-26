@@ -17,3 +17,11 @@ CURRENCY = "VND"
 
 # Thêm vào file config.py
 SETTINGS_FILE = 'data/settings.json' 
+
+# Cấu hình API VietQR
+VIETQR_API_URL = "https://api.vietqr.io/v2/generate"
+VIETQR_CLIENT_ID = "<CLIENT_ID_HERE>"  # Thay thế bằng client ID thực của bạn
+VIETQR_API_KEY = "<API_KEY_HERE>"      # Thay thế bằng API key thực của bạn
+BANK_ACCOUNT_NO = "113366668888"       # Số tài khoản ngân hàng của bạn
+BANK_ACCOUNT_NAME = "SHOP TAI KHOAN"   # Tên chủ tài khoản
+BANK_ACQ_ID = "970415"                 # Mã ngân hàng (VCB: 970436, MB: 970422, v.v...) 
