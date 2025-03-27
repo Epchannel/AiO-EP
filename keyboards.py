@@ -78,29 +78,55 @@ def user_management() -> InlineKeyboardMarkup:
     return markup
 
 def product_list_keyboard(products: List[Dict[str, Any]], page: int = 0, admin: bool = False) -> InlineKeyboardMarkup:
-    """Tạo bàn phím danh sách sản phẩm"""
+    """Tạo bàn phím danh sách sản phẩm với hiển thị 2 cột"""
     markup = InlineKeyboardMarkup()
     
-    # Hiển thị 5 sản phẩm mỗi trang
-    items_per_page = 5
+    # Hiển thị 10 sản phẩm mỗi trang (thay vì 5)
+    items_per_page = 10
     start_idx = page * items_per_page
     end_idx = min(start_idx + items_per_page, len(products))
     
-    for i in range(start_idx, end_idx):
-        product = products[i]
-        product_name = product.get('name', 'Không tên')
-        product_id = product.get('id', 0)
+    # Lấy danh sách sản phẩm cho trang hiện tại
+    current_products = products[start_idx:end_idx]
+    
+    # Hiển thị sản phẩm theo 2 cột
+    for i in range(0, len(current_products), 2):
+        row_buttons = []
         
-        if admin:
-            markup.row(InlineKeyboardButton(
-                f"{product_name}", 
-                callback_data=f"admin_product_{product_id}"
-            ))
-        else:
-            markup.row(InlineKeyboardButton(
-                f"{product_name}", 
-                callback_data=f"view_product_{product_id}"
-            ))
+        # Sản phẩm đầu tiên trong hàng
+        product = current_products[i]
+        product_id = product.get('id', 0)
+        product_name = product.get('name', 'Không tên')
+        
+        # Lấy số lượng tài khoản còn lại
+        db = Database()
+        available_count = db.count_available_accounts(product_id)
+        
+        # Thêm số lượng vào tên sản phẩm
+        display_name = f"{product_name} ({available_count})"
+        
+        # Tạo nút cho sản phẩm đầu tiên
+        callback_data = f"admin_product_{product_id}" if admin else f"view_product_{product_id}"
+        row_buttons.append(InlineKeyboardButton(display_name, callback_data=callback_data))
+        
+        # Nếu còn sản phẩm thứ hai trong hàng
+        if i + 1 < len(current_products):
+            product = current_products[i + 1]
+            product_id = product.get('id', 0)
+            product_name = product.get('name', 'Không tên')
+            
+            # Lấy số lượng tài khoản còn lại
+            available_count = db.count_available_accounts(product_id)
+            
+            # Thêm số lượng vào tên sản phẩm
+            display_name = f"{product_name} ({available_count})"
+            
+            # Tạo nút cho sản phẩm thứ hai
+            callback_data = f"admin_product_{product_id}" if admin else f"view_product_{product_id}"
+            row_buttons.append(InlineKeyboardButton(display_name, callback_data=callback_data))
+        
+        # Thêm hàng vào bàn phím
+        markup.row(*row_buttons)
     
     # Nút điều hướng trang
     nav_buttons = []
