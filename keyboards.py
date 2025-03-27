@@ -336,10 +336,37 @@ def account_menu() -> InlineKeyboardMarkup:
     """Tạo bàn phím menu tài khoản"""
     markup = InlineKeyboardMarkup()
     markup.row(
-        InlineKeyboardButton("💰 Số dư", callback_data="balance"),
+        InlineKeyboardButton("💰 Nạp tiền", callback_data="deposit_money"),
         InlineKeyboardButton("🛒 Tài khoản đã mua", callback_data="my_purchases")
     )
     markup.row(
         InlineKeyboardButton("🔙 Quay lại", callback_data="back_to_main")
+    )
+    return markup
+
+def deposit_amount_keyboard() -> InlineKeyboardMarkup:
+    """Tạo bàn phím chọn số tiền nạp"""
+    markup = InlineKeyboardMarkup()
+    markup.row(
+        InlineKeyboardButton("50,000 VND", callback_data="deposit_amount_50000"),
+        InlineKeyboardButton("100,000 VND", callback_data="deposit_amount_100000")
+    )
+    markup.row(
+        InlineKeyboardButton("200,000 VND", callback_data="deposit_amount_200000"),
+        InlineKeyboardButton("500,000 VND", callback_data="deposit_amount_500000")
+    )
+    markup.row(
+        InlineKeyboardButton("1,000,000 VND", callback_data="deposit_amount_1000000")
+    )
+    markup.row(
+        InlineKeyboardButton("🔙 Quay lại", callback_data="my_account")
+    )
+    return markup
+
+def payment_contact_keyboard() -> InlineKeyboardMarkup:
+    """Tạo bàn phím liên hệ admin và quay lại cho trang thanh toán"""
+    markup = InlineKeyboardMarkup()
+    markup.row(
+        InlineKeyboardButton("👨‍💼 Liên hệ Admin", url="https://t.me/ngochacoder")
     )
     return markup 

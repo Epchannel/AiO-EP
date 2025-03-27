@@ -1,5 +1,5 @@
 from telebot import TeleBot
-from telebot.types import Message, CallbackQuery
+from telebot.types import Message, CallbackQuery, InputMediaPhoto
 import config
 from database import Database
 import keyboards
@@ -10,6 +10,9 @@ import logging
 import time
 import json
 import os
+import requests
+import base64
+from io import BytesIO
 
 # Thiết lập logging
 logging.basicConfig(
@@ -2126,6 +2129,54 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
             reply_markup=keyboards.account_menu()
         )
     
+    elif data == "deposit_money":
+        # Hiển thị form nạp tiền
+        bot.edit_message_text(
+            "💰 *Nạp tiền vào tài khoản*\n\n"
+            "Vui lòng chọn số tiền bạn muốn nạp:",
+            call.message.chat.id,
+            call.message.message_id,
+            parse_mode="Markdown",
+            reply_markup=keyboards.deposit_amount_keyboard()
+        )
+
+    elif data.startswith("deposit_amount_"):
+        # Xử lý số tiền nạp
+        try:
+            amount = int(data.split("_")[2])
+            
+            # Tạo mô tả giao dịch
+            description = f"Naptien {username} {user_id}"
+            
+            # Tạo mã QR
+            qr_image = generate_payment_qr(user_id, amount, description)
+            
+            if qr_image:
+                # Gửi ảnh QR code
+                bot.delete_message(call.message.chat.id, call.message.message_id)
+                
+                # Tạo bàn phím với nút liên hệ admin và quay lại
+                contact_markup = keyboards.payment_contact_keyboard()
+                
+                bot.send_photo(
+                    call.message.chat.id,
+                    qr_image,
+                    caption=f"📱 *Quét mã QR để nạp tiền*\n\n"
+                    f"Số tiền: {amount:,} {config.CURRENCY}\n"
+                    f"Nội dung chuyển khoản: `{description}`\n\n"
+                    f"⚠️ *Lưu ý:*\n"
+                    f"- Vui lòng không thay đổi nội dung chuyển khoản\n"
+                    f"- Tiền sẽ được cộng vào tài khoản sau khi admin xác nhận\n"
+                    f"- Sử dụng nút bên dưới để liên hệ admin nếu cần hỗ trợ",
+                    parse_mode="Markdown",
+                    reply_markup=contact_markup
+                )
+            else:
+                bot.answer_callback_query(call.id, "❌ Không thể tạo mã QR. Vui lòng thử lại sau.", show_alert=True)
+        except Exception as e:
+            logger.error(f"Error processing deposit: {e}")
+            bot.answer_callback_query(call.id, "❌ Đã xảy ra lỗi. Vui lòng thử lại sau.", show_alert=True)
+    
     # Đánh dấu callback đã được xử lý
     bot.answer_callback_query(call.id)
 
@@ -2306,3 +2357,47 @@ def force_ban_command(bot: TeleBot, message: Message) -> None:
             bot.send_message(user_id, f"❌ Không thể cấm người dùng với ID {target_user_id}.")
     except Exception as e:
         bot.send_message(user_id, f"Error: {str(e)}")
+
+def generate_payment_qr(user_id: int, amount: int = 0, description: str = "") -> Optional[BytesIO]:
+    """Tạo mã QR thanh toán sử dụng VietQR API"""
+    try:
+        # Tạo mô tả giao dịch
+        if not description:
+            description = f"Nap tien ID {user_id}"
+        
+        # Chuẩn bị dữ liệu cho API
+        url = config.VIETQR_API_URL
+        payload = {
+            "accountNo": config.BANK_ACCOUNT_NO,
+            "accountName": config.BANK_ACCOUNT_NAME,
+            "acqId": config.BANK_ACQ_ID,
+            "addInfo": description,
+            "amount": str(amount),
+            "template": "compact"
+        }
+        headers = {
+            "x-client-id": config.VIETQR_CLIENT_ID,
+            "x-api-key": config.VIETQR_API_KEY,
+            "Content-Type": "application/json"
+        }
+        
+        # Gửi yêu cầu đến API
+        response = requests.post(url, headers=headers, data=json.dumps(payload))
+        
+        # Kiểm tra phản hồi
+        if response.status_code == 200:
+            data = response.json()
+            qr_data_uri = data.get("data", {}).get("qrDataURL", "")
+            
+            if qr_data_uri.startswith("data:image"):
+                # Chuyển đổi base64 thành dữ liệu hình ảnh
+                image_data = base64.b64decode(qr_data_uri.split(",", 1)[1])
+                image_buffer = BytesIO(image_data)
+                image_buffer.name = "payment_qr.png"
+                return image_buffer
+        
+        logger.error(f"Error generating QR code: {response.text}")
+        return None
+    except Exception as e:
+        logger.error(f"Error in generate_payment_qr: {e}")
+        return None
