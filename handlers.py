@@ -947,16 +947,31 @@ def handle_state(bot: TeleBot, message: Message) -> None:
         users = db.get_all_users()
         success_count = 0
         fail_count = 0
+        skipped_count = 0
         
         for user_item in users:
             try:
                 target_id = user_item.get('id')
+                # Bỏ qua người dùng bị cấm
+                if user_item.get('banned', False):
+                    skipped_count += 1
+                    continue
+                
                 if target_id != user_id:  # Không gửi cho chính mình
-                    bot.send_message(
-                        target_id,
-                        f"📣 *THÔNG BÁO TỪ QUẢN TRỊ VIÊN*\n\n{broadcast_message}",
-                        parse_mode="Markdown"
-                    )
+                    # Thử gửi với Markdown
+                    try:
+                        bot.send_message(
+                            target_id,
+                            f"📣 *THÔNG BÁO TỪ QUẢN TRỊ VIÊN*\n\n{broadcast_message}",
+                            parse_mode="Markdown"
+                        )
+                    except telebot.apihelper.ApiTelegramException as e:
+                        # Nếu lỗi Markdown, thử gửi lại không có định dạng
+                        if "can't parse entities" in str(e):
+                            bot.send_message(
+                                target_id,
+                                f"📣 THÔNG BÁO TỪ QUẢN TRỊ VIÊN\n\n{broadcast_message}"
+                            )
                     success_count += 1
             except Exception as e:
                 logger.error(f"Lỗi khi gửi thông báo đến người dùng {user_item.get('id')}: {e}")
@@ -967,6 +982,7 @@ def handle_state(bot: TeleBot, message: Message) -> None:
             user_id,
             f"✅ Đã gửi thông báo thành công:\n"
             f"- Số người nhận được: {success_count}\n"
+            f"- Số người bị bỏ qua (bị cấm): {skipped_count}\n"
             f"- Số lỗi: {fail_count}"
         )
     
@@ -1218,9 +1234,15 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
         # Hiển thị danh sách tài khoản trả phí
         products = [p for p in db.get_all_products() if not p.get('is_free', False)]
         
-        if not products:
+        # Lọc sản phẩm có hàng
+        products_with_stock = []
+        for product in products:
+            if db.count_available_accounts(product.get('id', 0)) > 0:
+                products_with_stock.append(product)
+        
+        if not products_with_stock:
             bot.edit_message_text(
-                "📦 Chưa có sản phẩm trả phí nào.",
+                "📦 Hiện tại không có sản phẩm trả phí nào có sẵn.",
                 call.message.chat.id,
                 call.message.message_id,
                 reply_markup=keyboards.back_button()
@@ -1232,16 +1254,22 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
             call.message.chat.id,
             call.message.message_id,
             parse_mode="Markdown",
-            reply_markup=keyboards.product_list_keyboard(products)
+            reply_markup=keyboards.product_list_keyboard(products_with_stock)
         )
     
     elif data == "free_accounts":
         # Hiển thị danh sách tài khoản miễn phí
         products = [p for p in db.get_all_products() if p.get('is_free', False)]
         
-        if not products:
+        # Lọc sản phẩm có hàng
+        products_with_stock = []
+        for product in products:
+            if db.count_available_accounts(product.get('id', 0)) > 0:
+                products_with_stock.append(product)
+        
+        if not products_with_stock:
             bot.edit_message_text(
-                "📦 Chưa có sản phẩm miễn phí nào.",
+                "📦 Hiện tại không có sản phẩm miễn phí nào có sẵn.",
                 call.message.chat.id,
                 call.message.message_id,
                 reply_markup=keyboards.back_button()
@@ -1253,7 +1281,7 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
             call.message.chat.id,
             call.message.message_id,
             parse_mode="Markdown",
-            reply_markup=keyboards.product_list_keyboard(products)
+            reply_markup=keyboards.product_list_keyboard(products_with_stock)
         )
     
     elif data == "tutorial":
@@ -1475,10 +1503,15 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
             # Import datetime
             import datetime
             current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            # Escape any special characters in username and product name
+            safe_username = username.replace('_', '\\_').replace('*', '\\*').replace('`', '\\`').replace('[', '\\[')
+            safe_product_name = result['product_name'].replace('_', '\\_').replace('*', '\\*').replace('`', '\\`').replace('[', '\\[')
+
             admin_notification = (
                 f"💰 *Giao dịch mới thành công!*\n\n"
-                f"Người dùng: @{username} (ID: `{user_id}`)\n"
-                f"Sản phẩm: {result['product_name']}\n"
+                f"Người dùng: @{safe_username} (ID: `{user_id}`)\n"
+                f"Sản phẩm: {safe_product_name}\n"
                 f"Giá: {result['price']:,} {config.CURRENCY}\n"
                 f"Thời gian: {current_time}"
             )
@@ -1593,11 +1626,27 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
             )
         else:
             products = [p for p in db.get_all_products() if not p.get('is_free', False)]
+            
+            # Lọc sản phẩm có hàng
+            products_with_stock = []
+            for product in products:
+                if db.count_available_accounts(product.get('id', 0)) > 0:
+                    products_with_stock.append(product)
+            
+            if not products_with_stock:
+                bot.edit_message_text(
+                    "📦 Hiện tại không có sản phẩm trả phí nào có sẵn.",
+                    call.message.chat.id,
+                    call.message.message_id,
+                    reply_markup=keyboards.back_button("back_to_main")
+                )
+                return
+            
             bot.edit_message_text(
                 "🔐 Danh sách tài khoản trả phí:",
                 call.message.chat.id,
                 call.message.message_id,
-                reply_markup=keyboards.product_list_keyboard(products)
+                reply_markup=keyboards.product_list_keyboard(products_with_stock)
             )
     
     elif data == "cancel_purchase":
@@ -1620,11 +1669,18 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
             )
         else:
             products = [p for p in db.get_all_products() if not p.get('is_free', False)]
+            
+            # Lọc sản phẩm có hàng
+            products_with_stock = []
+            for product in products:
+                if db.count_available_accounts(product.get('id', 0)) > 0:
+                    products_with_stock.append(product)
+            
             bot.edit_message_text(
                 "🔐 Danh sách tài khoản trả phí:",
                 call.message.chat.id,
                 call.message.message_id,
-                reply_markup=keyboards.product_list_keyboard(products, page=page)
+                reply_markup=keyboards.product_list_keyboard(products_with_stock, page=page)
             )
     
     elif data.startswith("user_page_"):
@@ -2208,17 +2264,34 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
         user = db.get_user(user_id)
         balance = user.get('balance', 0)
         
-        bot.edit_message_text(
-            f"👤 *Thông tin tài khoản*\n\n"
-            f"ID: `{user_id}`\n"
-            f"Username: @{username}\n"
-            f"Số dư: {balance:,} {config.CURRENCY}\n\n"
-            f"Chọn một tùy chọn bên dưới:",
-            call.message.chat.id,
-            call.message.message_id,
-            parse_mode="Markdown",
-            reply_markup=keyboards.account_menu()
-        )
+        # Escape username để tránh lỗi Markdown
+        safe_username = username.replace('_', '\\_').replace('*', '\\*').replace('`', '\\`').replace('[', '\\[')
+        
+        try:
+            bot.edit_message_text(
+                f"👤 *Thông tin tài khoản*\n\n"
+                f"ID: `{user_id}`\n"
+                f"Username: @{safe_username}\n"
+                f"Số dư: {balance:,} {config.CURRENCY}\n\n"
+                f"Chọn một tùy chọn bên dưới:",
+                call.message.chat.id,
+                call.message.message_id,
+                parse_mode="Markdown",
+                reply_markup=keyboards.account_menu()
+            )
+        except telebot.apihelper.ApiTelegramException as e:
+            # Nếu vẫn lỗi, thử gửi không có parse_mode
+            if "can't parse entities" in str(e):
+                bot.edit_message_text(
+                    f"👤 Thông tin tài khoản\n\n"
+                    f"ID: {user_id}\n"
+                    f"Username: @{username}\n"
+                    f"Số dư: {balance:,} {config.CURRENCY}\n\n"
+                    f"Chọn một tùy chọn bên dưới:",
+                    call.message.chat.id,
+                    call.message.message_id,
+                    reply_markup=keyboards.account_menu()
+                )
     
     elif data == "deposit_money":
         # Hiển thị form nạp tiền
@@ -2354,6 +2427,11 @@ def notify_admins(bot: TeleBot, message: str, parse_mode: str = None) -> None:
     """Gửi thông báo đến tất cả admin"""
     for admin_id in config.ADMIN_IDS:
         try:
+            # Escape any problematic characters in the message if using Markdown
+            if parse_mode == "Markdown":
+                # Escape characters that could break Markdown formatting
+                message = message.replace('_', '\\_').replace('*', '\\*').replace('`', '\\`').replace('[', '\\[')
+                
             bot.send_message(admin_id, message, parse_mode=parse_mode)
         except Exception as e:
             logger.error(f"Không thể gửi thông báo đến admin {admin_id}: {e}")

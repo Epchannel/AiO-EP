@@ -69,7 +69,22 @@
         "id": 5457094279,
         "username": "epchannelll",
         "balance": 0,
-        "purchases": [],
+        "purchases": [
+            {
+                "product_id": 15,
+                "product_name": "Vieon Premium",
+                "price": 0.0,
+                "account_data": "0935552192:123456 | Tên Gói = VIP - 06 Tháng | AutoRenew = False | ExpiryDate = 2025-05-02 | Còn xem được = 44 | Payment = Voucher | HitTime = 3/18/2025 7:53 AM",
+                "timestamp": "2025-03-27T16:11:28.035545"
+            },
+            {
+                "product_id": 17,
+                "product_name": "Surfshark VPN",
+                "price": 0.0,
+                "account_data": "chocolateeirena@indigobook.com | 0$JF;6HYQz(,mr( | EXP : 12 / 05 / 2025",
+                "timestamp": "2025-03-27T16:23:05.300320"
+            }
+        ],
         "banned": false
     },
     {
@@ -172,6 +187,13 @@
                 "price": 0.0,
                 "account_data": "0948802131:123456 | Tên Gói = VIP - 03 Tháng | AutoRenew = False | ExpiryDate = 2025-04-05 | Còn xem được = 17 | Payment = Voucher | HitTime = 3/18/2025 7:53 AM",
                 "timestamp": "2025-03-22T19:43:25.128449"
+            },
+            {
+                "product_id": 17,
+                "product_name": "Surfshark VPN",
+                "price": 0.0,
+                "account_data": "chocolateeirena@indigobook.com | 0$JF;6HYQz(,mr( | EXP : 12 / 05 / 2025",
+                "timestamp": "2025-03-27T16:22:03.847821"
             }
         ],
         "banned": false
@@ -194,6 +216,13 @@
                 "price": 0.0,
                 "account_data": "AiOEpBot1@simpace.edu.vn|Telegram:AiOEpBot2025",
                 "timestamp": "2025-03-22T19:44:34.378455"
+            },
+            {
+                "product_id": 17,
+                "product_name": "Surfshark VPN",
+                "price": 0.0,
+                "account_data": "chocolateeirena@indigobook.com | 0$JF;6HYQz(,mr( | EXP : 12 / 05 / 2025",
+                "timestamp": "2025-03-27T16:25:52.886395"
             }
         ],
         "banned": false
@@ -334,7 +363,15 @@
         "id": 1241868333,
         "username": "chenchenwei",
         "balance": 0,
-        "purchases": [],
+        "purchases": [
+            {
+                "product_id": 17,
+                "product_name": "Surfshark VPN",
+                "price": 0.0,
+                "account_data": "chocolateeirena@indigobook.com | 0$JF;6HYQz(,mr( | EXP : 12 / 05 / 2025",
+                "timestamp": "2025-03-27T16:30:16.155976"
+            }
+        ],
         "banned": false
     },
     {
@@ -513,6 +550,13 @@
                 "price": 0.0,
                 "account_data": "0911963619:123456 | Tên Gói = VIP - 06 Tháng | AutoRenew = False | ExpiryDate = 2025-07-14 | Còn xem được = 117 | Payment = Voucher | HitTime = 3/18/2025 7:53 AM",
                 "timestamp": "2025-03-22T22:08:27.003459"
+            },
+            {
+                "product_id": 17,
+                "product_name": "Surfshark VPN",
+                "price": 0.0,
+                "account_data": "chocolateeirena@indigobook.com | 0$JF;6HYQz(,mr( | EXP : 12 / 05 / 2025",
+                "timestamp": "2025-03-27T16:22:12.058675"
             }
         ],
         "banned": false
@@ -623,7 +667,15 @@
         "id": 6087947256,
         "username": "quanbau23",
         "balance": 0,
-        "purchases": [],
+        "purchases": [
+            {
+                "product_id": 17,
+                "product_name": "Surfshark VPN",
+                "price": 0.0,
+                "account_data": "chocolateeirena@indigobook.com | 0$JF;6HYQz(,mr( | EXP : 12 / 05 / 2025",
+                "timestamp": "2025-03-27T16:26:23.963502"
+            }
+        ],
         "banned": false
     },
     {
@@ -666,7 +718,22 @@
         "id": 7504023077,
         "username": "user_7504023077",
         "balance": 0,
-        "purchases": [],
+        "purchases": [
+            {
+                "product_id": 17,
+                "product_name": "Surfshark VPN",
+                "price": 0.0,
+                "account_data": "chocolateeirena@indigobook.com | 0$JF;6HYQz(,mr( | EXP : 12 / 05 / 2025",
+                "timestamp": "2025-03-27T16:45:15.818381"
+            },
+            {
+                "product_id": 15,
+                "product_name": "Vieon Premium",
+                "price": 0.0,
+                "account_data": "0933749059:123456 | Tên Gói = Gói VieON Premium - 03 tháng | AutoRenew = False | ExpiryDate = 2025-03-22 | Còn xem được = 3 | Payment = Voucher | HitTime = 3/18/2025 7:53 AM",
+                "timestamp": "2025-03-27T16:45:40.926670"
+            }
+        ],
         "banned": false
     },
     {
@@ -680,7 +747,15 @@
         "id": 6075402048,
         "username": "Tuandv262",
         "balance": 0,
-        "purchases": [],
+        "purchases": [
+            {
+                "product_id": 17,
+                "product_name": "Surfshark VPN",
+                "price": 0.0,
+                "account_data": "chocolateeirena@indigobook.com | 0$JF;6HYQz(,mr( | EXP : 12 / 05 / 2025",
+                "timestamp": "2025-03-27T16:25:27.758631"
+            }
+        ],
         "banned": false
     },
     {
@@ -891,6 +966,13 @@
                 "price": 0.0,
                 "account_data": "namthanh.901@gmail.com:namthanh135279 | Loại tài khoản = Free | type = Free | Ngày tham gia = 04-12-2017 | Fxu hiện có = 40,000 | Điểm thưởng mới = 0 | Sử dụng = 0 KB | Còn Khả Dụng = 50.0 GB",
                 "timestamp": "2025-03-23T17:58:44.253411"
+            },
+            {
+                "product_id": 17,
+                "product_name": "Surfshark VPN",
+                "price": 0.0,
+                "account_data": "chocolateeirena@indigobook.com | 0$JF;6HYQz(,mr( | EXP : 12 / 05 / 2025",
+                "timestamp": "2025-03-27T16:22:13.410396"
             }
         ],
         "banned": false
@@ -920,6 +1002,13 @@
                 "price": 0.0,
                 "account_data": "0966009297:123456 | Tên Gói = Gói VieON Premium - 03 tháng | AutoRenew = False | ExpiryDate = 2025-04-12 | Còn xem được = 24 | Payment = Voucher | HitTime = 3/18/2025 7:53 AM",
                 "timestamp": "2025-03-26T05:43:57.747218"
+            },
+            {
+                "product_id": 17,
+                "product_name": "Surfshark VPN",
+                "price": 0.0,
+                "account_data": "chocolateeirena@indigobook.com | 0$JF;6HYQz(,mr( | EXP : 12 / 05 / 2025",
+                "timestamp": "2025-03-27T17:01:51.516338"
             }
         ],
         "banned": false
@@ -1029,7 +1118,22 @@
         "id": 6009020634,
         "username": "Bevis_GO",
         "balance": 0,
-        "purchases": [],
+        "purchases": [
+            {
+                "product_id": 17,
+                "product_name": "Surfshark VPN",
+                "price": 0.0,
+                "account_data": "chocolateeirena@indigobook.com | 0$JF;6HYQz(,mr( | EXP : 12 / 05 / 2025",
+                "timestamp": "2025-03-27T16:59:36.620689"
+            },
+            {
+                "product_id": 15,
+                "product_name": "Vieon Premium",
+                "price": 0.0,
+                "account_data": "0918568502:123456 | Tên Gói = VIP - 03 Tháng | AutoRenew = False | ExpiryDate = 2025-04-02 | Còn xem được = 14 | Payment = Voucher | HitTime = 3/18/2025 7:53 AM",
+                "timestamp": "2025-03-27T16:59:58.033680"
+            }
+        ],
         "banned": false
     },
     {
@@ -1167,7 +1271,15 @@
         "id": 741508311,
         "username": "DavidHuynhh",
         "balance": 0,
-        "purchases": [],
+        "purchases": [
+            {
+                "product_id": 17,
+                "product_name": "Surfshark VPN",
+                "price": 0.0,
+                "account_data": "chocolateeirena@indigobook.com | 0$JF;6HYQz(,mr( | EXP : 12 / 05 / 2025",
+                "timestamp": "2025-03-27T16:32:10.313212"
+            }
+        ],
         "banned": false
     },
     {
@@ -1216,14 +1328,30 @@
         "id": 2054368002,
         "username": "user_2054368002",
         "balance": 0,
-        "purchases": [],
+        "purchases": [
+            {
+                "product_id": 17,
+                "product_name": "Surfshark VPN",
+                "price": 0.0,
+                "account_data": "chocolateeirena@indigobook.com | 0$JF;6HYQz(,mr( | EXP : 12 / 05 / 2025",
+                "timestamp": "2025-03-27T16:28:37.721408"
+            }
+        ],
         "banned": false
     },
     {
         "id": 6935127871,
         "username": "user_6935127871",
         "balance": 0,
-        "purchases": [],
+        "purchases": [
+            {
+                "product_id": 17,
+                "product_name": "Surfshark VPN",
+                "price": 0.0,
+                "account_data": "chocolateeirena@indigobook.com | 0$JF;6HYQz(,mr( | EXP : 12 / 05 / 2025",
+                "timestamp": "2025-03-27T17:02:58.850655"
+            }
+        ],
         "banned": false
     },
     {
@@ -1321,7 +1449,15 @@
         "id": 397428588,
         "username": "dzung1",
         "balance": 0,
-        "purchases": [],
+        "purchases": [
+            {
+                "product_id": 15,
+                "product_name": "Vieon Premium",
+                "price": 0.0,
+                "account_data": "0937365288:123456 | Tên Gói = VIP - 01 Tháng - Tự động gia hạn | AutoRenew = True | ExpiryDate = 2025-04-15 | Còn xem được = 27 | Payment = WALLET | HitTime = 3/18/2025 7:53 AM",
+                "timestamp": "2025-03-27T16:29:31.803547"
+            }
+        ],
         "banned": false
     },
     {
@@ -1457,5 +1593,28 @@
         "banned": false,
         "purchases": [],
         "created_at": "2025-03-27T15:41:02.577766"
+    },
+    {
+        "id": 8031552536,
+        "username": "tranmycntt",
+        "balance": 0,
+        "banned": false,
+        "purchases": [
+            {
+                "product_id": 17,
+                "product_name": "Surfshark VPN",
+                "price": 0.0,
+                "account_data": "chocolateeirena@indigobook.com | 0$JF;6HYQz(,mr( | EXP : 12 / 05 / 2025",
+                "timestamp": "2025-03-27T16:24:03.315800"
+            },
+            {
+                "product_id": 15,
+                "product_name": "Vieon Premium",
+                "price": 0.0,
+                "account_data": "0906791009:123456 | Tên Gói = VIP - 06 Tháng | AutoRenew = False | ExpiryDate = 2025-05-09 | Còn xem được = 51 | Payment = Voucher | HitTime = 3/18/2025 7:53 AM",
+                "timestamp": "2025-03-27T16:24:13.658982"
+            }
+        ],
+        "created_at": "2025-03-27T16:23:49.167201"
     }
 ]

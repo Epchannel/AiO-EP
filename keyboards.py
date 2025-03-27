@@ -81,7 +81,24 @@ def product_list_keyboard(products: List[Dict[str, Any]], page: int = 0, admin: 
     """Tạo bàn phím danh sách sản phẩm với hiển thị 2 cột"""
     markup = InlineKeyboardMarkup()
     
-    # Hiển thị 10 sản phẩm mỗi trang (thay vì 5)
+    # Lấy database để kiểm tra số lượng tài khoản
+    db = Database()
+    
+    # Lọc sản phẩm có hàng (chỉ lọc khi không phải admin)
+    if not admin:
+        filtered_products = []
+        for product in products:
+            product_id = product.get('id', 0)
+            available_count = db.count_available_accounts(product_id)
+            if available_count > 0:
+                filtered_products.append(product)
+        products = filtered_products
+    
+    # Nếu không có sản phẩm nào sau khi lọc
+    if not products:
+        return markup
+    
+    # Hiển thị 10 sản phẩm mỗi trang
     items_per_page = 10
     start_idx = page * items_per_page
     end_idx = min(start_idx + items_per_page, len(products))
@@ -99,7 +116,6 @@ def product_list_keyboard(products: List[Dict[str, Any]], page: int = 0, admin: 
         product_name = product.get('name', 'Không tên')
         
         # Lấy số lượng tài khoản còn lại
-        db = Database()
         available_count = db.count_available_accounts(product_id)
         
         # Thêm số lượng vào tên sản phẩm
