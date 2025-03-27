@@ -1,5 +1,5 @@
 from telebot import TeleBot
-from telebot.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from telebot.types import Message, CallbackQuery
 import config
 from database import Database
 import keyboards
@@ -10,12 +10,6 @@ import logging
 import time
 import json
 import os
-import random
-import string
-import base64
-import requests
-import io
-from PIL import Image
 
 # Thiết lập logging
 logging.basicConfig(
@@ -119,8 +113,7 @@ def start_command(bot: TeleBot, message: Message) -> None:
     
     # Gửi tin nhắn chào mừng
     welcome_text = (
-        f"🏠 *Menu chính*\n\n"
-        f"👋 Chào mừng, {username}!\n"
+        f"👋 Chào mừng, {username}!\n\n"
         f"Đây là bot mua bán tài khoản. Sử dụng các nút bên dưới để điều hướng.\n\n"
         f"Số dư hiện tại: {user.get('balance', 0):,} {config.CURRENCY}"
     )
@@ -128,7 +121,6 @@ def start_command(bot: TeleBot, message: Message) -> None:
     bot.send_message(
         user_id,
         welcome_text,
-        parse_mode="Markdown",
         reply_markup=keyboards.main_menu(is_admin(user_id))
     )
 
@@ -594,24 +586,33 @@ def broadcast_command(bot: TeleBot, message: Message) -> None:
     )
 
 def handle_state(bot: TeleBot, message: Message) -> None:
-    """Xử lý trạng thái người dùng"""
-    # Lấy thông tin người dùng
+    """Xử lý tin nhắn dựa trên trạng thái của người dùng"""
     user_id = message.from_user.id
     username = message.from_user.username or f"user_{user_id}"
+    text = message.text
     
-    # Lấy trạng thái hiện tại của người dùng
-    state = user_states.get(user_id, {}).get('state', None)
+    logger.info(f"User {username} (ID: {user_id}) sent message in state {user_states.get(user_id, {}).get('state')}: {text}")
     
-    if not state:
+    if user_id not in user_states:
         return
     
-    # Xử lý các trạng thái khác nhau
-    if state == 'waiting_for_create_product_name':
-        # Xử lý nhập tên sản phẩm
+    state = user_states[user_id]['state']
+    
+    # Kiểm tra lệnh hủy
+    if text == '/cancel':
+        del user_states[user_id]
+        bot.send_message(user_id, "❌ Đã hủy thao tác.")
+        return
+    
+    # Xử lý các trạng thái
+    if state == 'waiting_for_product_name':
+        # Lưu tên sản phẩm và chuyển sang trạng thái chờ giá
+        user_states[user_id]['data']['name'] = text
         user_states[user_id]['state'] = 'waiting_for_product_price'
+        
         bot.send_message(
             user_id,
-            f"👍 Đã lưu tên sản phẩm: *{user_states[user_id]['data']['name']}*\n\n"
+            f"👍 Đã lưu tên sản phẩm: *{text}*\n\n"
             f"Vui lòng nhập giá cho sản phẩm (số):",
             parse_mode="Markdown"
         )
@@ -619,7 +620,7 @@ def handle_state(bot: TeleBot, message: Message) -> None:
     elif state == 'waiting_for_product_price':
         # Xử lý giá sản phẩm
         try:
-            price = float(message.text.strip())
+            price = float(text)
             if price < 0:
                 bot.send_message(user_id, "❌ Giá sản phẩm không thể âm.")
                 return
@@ -644,7 +645,7 @@ def handle_state(bot: TeleBot, message: Message) -> None:
     elif state == 'waiting_for_product_description':
         # Xử lý mô tả sản phẩm
         product_data = user_states[user_id]['data']
-        product_data['description'] = message.text.strip()
+        product_data['description'] = text
         
         # Tạo sản phẩm mới
         new_id = db.create_product(product_data)
@@ -1003,119 +1004,526 @@ def handle_state(bot: TeleBot, message: Message) -> None:
     
     # Thêm các trạng thái khác ở đây
 
-    # Thêm xử lý cho trạng thái chờ nhập số tiền nạp tùy chọn
-    elif state == 'waiting_for_deposit_amount':
-        # Xử lý nhập số tiền nạp tùy chọn
-        try:
-            # Xóa dấu phẩy nếu có và chuyển đổi sang số nguyên
-            amount_text = message.text.strip().replace(',', '')
-            amount = int(amount_text)
-            
-            # Kiểm tra số tiền tối thiểu
-            if amount < 10000:
-                bot.send_message(
-                    user_id,
-                    "❌ Số tiền tối thiểu là 10,000 VNĐ. Vui lòng nhập lại.",
-                    reply_markup=keyboards.back_button("deposit_money")
-                )
-                return
-            
-            # Tạo QR code
-            qr_image_data = generate_qr_code(user_id, amount)
-            
-            if qr_image_data:
-                # Tạo caption
-                caption = (
-                    f"💳 *Mã QR thanh toán*\n\n"
-                    f"Số tiền: {amount:,} {config.CURRENCY}\n"
-                    f"Người nhận: {config.BANK_ACCOUNT_NAME}\n"
-                    f"Số tài khoản: {config.BANK_ACCOUNT_NO}\n"
-                    f"Nội dung: NAP TIEN USER {user_id}\n\n"
-                    f"⚠️ Vui lòng chuyển đúng số tiền và nội dung để hệ thống xác nhận tự động.\n"
-                    f"👉 Sau khi chuyển khoản, vui lòng đợi 1-5 phút để hệ thống cập nhật."
-                )
-                
-                # Lưu QR code tạm thời
-                qr_filename = f"qr_{user_id}_{int(datetime.datetime.now().timestamp())}.png"
-                with open(qr_filename, "wb") as f:
-                    f.write(qr_image_data)
-                
-                # Gửi QR code
-                with open(qr_filename, "rb") as f:
-                    bot.send_photo(
-                        user_id,
-                        f,
-                        caption=caption,
-                        parse_mode="Markdown",
-                        reply_markup=keyboards.back_button("account_menu")
-                    )
-                
-                # Xóa file tạm
-                try:
-                    os.remove(qr_filename)
-                except:
-                    pass
-                
-                # Xóa trạng thái người dùng
-                if user_id in user_states:
-                    del user_states[user_id]
-                
-                # Thông báo cho admin về giao dịch mới
-                admin_notification = (
-                    f"💰 *Yêu cầu nạp tiền mới (số tiền tùy chọn)*\n\n"
-                    f"💰 *Yêu cầu nạp tiền mới*\n\n"
-                    f"User: @{username} (ID: `{user_id}`)\n"
-                    f"Số tiền: {amount:,} {config.CURRENCY}\n"
-                    f"Thời gian: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-                    f"Nội dung chuyển khoản: `NAP TIEN USER {user_id}`"
-                )
-                notify_admins(bot, admin_notification, "Markdown")
-                
-            else:
-                # Thông báo lỗi nếu không tạo được QR
-                bot.answer_callback_query(
-                    call.id,
-                    "Không thể tạo mã QR. Vui lòng thử lại sau hoặc liên hệ admin.",
-                    show_alert=True
-                )
-                
-                # Quay lại menu tài khoản
-                bot.edit_message_text(
-                    f"👤 *Quản lý tài khoản*\n\n"
-                    f"Xin chào, {username}!\n"
-                    f"Số dư hiện tại: {user.get('balance', 0):,} {config.CURRENCY}\n\n"
-                    f"Chọn một trong các tùy chọn bên dưới:",
-                    call.message.chat.id,
-                    call.message.message_id,
-                    parse_mode="Markdown",
-                    reply_markup=keyboards.account_menu()
-                )
-                
-        except Exception as e:
-            logger.error(f"Error processing deposit: {str(e)}")
-            bot.answer_callback_query(
-                call.id,
-                "Có lỗi xảy ra. Vui lòng thử lại sau.",
-                show_alert=True
-            )
+def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
+    """Xử lý callback query từ các nút inline"""
+    user_id = call.from_user.id
+    username = call.from_user.username or f"user_{user_id}"
+    data = call.data
     
-    elif data == "custom_amount":
-        # Yêu cầu người dùng nhập số tiền tùy chọn
+    logger.info(f"User {username} (ID: {user_id}) pressed button: {data}")
+    
+    # Kiểm tra xem người dùng có bị cấm không
+    user = db.get_user(user_id)
+    if user and user.get('banned', False):
+        bot.answer_callback_query(call.id, "⛔ Tài khoản của bạn đã bị cấm. Vui lòng liên hệ quản trị viên.", show_alert=True)
+        return
+    
+    # Thêm các hàm tiện ích
+    def get_statistics():
+        """Lấy thống kê hệ thống"""
+        # Import datetime trong phạm vi hàm này
+        import datetime
+        
+        users = db.get_all_users()
+        total_users = len(users)
+        
+        # Đếm người dùng mới trong ngày
+        today = datetime.datetime.now().date()
+        new_users_today = 0
+        
+        # Giả sử có trường 'created_at' trong dữ liệu người dùng
+        for user in users:
+            if 'created_at' in user:
+                try:
+                    created_date = datetime.datetime.fromisoformat(user['created_at']).date()
+                    if created_date == today:
+                        new_users_today += 1
+                except (ValueError, TypeError):
+                    pass
+        
+        # Đếm tổng đơn hàng và doanh thu
+        total_orders = 0
+        revenue = 0
+        for user in users:
+            purchases = user.get('purchases', [])
+            total_orders += len(purchases)
+            for purchase in purchases:
+                revenue += purchase.get('price', 0)
+        
+        return {
+            'total_users': total_users,
+            'new_users_today': new_users_today,
+            'total_orders': total_orders,
+            'revenue': revenue
+        }
+    
+    def process_purchase(user_id, product_id):
+        """Xử lý quá trình mua hàng"""
+        try:
+            # Import datetime ở đầu hàm để đảm bảo nó có sẵn trong phạm vi của hàm
+            import datetime
+            
+            user = db.get_user(user_id)
+            if not user:
+                # Tạo user mới nếu không tồn tại
+                user = {
+                    'id': user_id,
+                    'balance': 0,
+                    'purchases': [],
+                    'banned': False
+                }
+                db.add_user(user)
+            
+            product = db.get_product(product_id)
+            if not product:
+                return {
+                    'success': False,
+                    'message': 'Sản phẩm không tồn tại.'
+                }
+            
+            # Kiểm tra số lượng tài khoản còn lại
+            available_accounts = db.count_available_accounts(product_id)
+            if available_accounts <= 0:
+                return {
+                    'success': False,
+                    'message': 'Sản phẩm đã hết hàng.'
+                }
+            
+            # Kiểm tra nếu là sản phẩm miễn phí, người dùng chỉ được nhận 1 lần
+            if product.get('is_free', False):
+                user_purchases = user.get('purchases', [])
+                for purchase in user_purchases:
+                    if purchase.get('product_id') == product_id:
+                        return {
+                            'success': False,
+                            'message': 'Bạn đã nhận sản phẩm miễn phí này rồi. Mỗi người chỉ được nhận 1 lần.'
+                        }
+            
+            # Kiểm tra số dư
+            user_balance = user.get('balance', 0)
+            product_price = product.get('price', 0)
+            
+            if product_price > 0 and user_balance < product_price:
+                return {
+                    'success': False,
+                    'message': f'Số dư không đủ. Bạn cần thêm {product_price - user_balance:,} {config.CURRENCY}.'
+                }
+            
+            # Lấy một tài khoản
+            account = db.get_available_account(product_id)
+            if not account:
+                return {
+                    'success': False,
+                    'message': 'Không thể lấy tài khoản. Vui lòng thử lại sau.'
+                }
+            
+            # Trừ tiền
+            if product_price > 0:
+                new_balance = user_balance - product_price
+                db.update_user(user_id, {'balance': new_balance})
+            else:
+                new_balance = user_balance
+            
+            # Lưu lịch sử mua hàng
+            purchase_data = {
+                'product_id': product_id,
+                'product_name': product.get('name', 'Unknown'),
+                'price': product_price,
+                'account_data': account.get('data', ''),
+                'timestamp': datetime.datetime.now().isoformat()
+            }
+            
+            user_purchases = user.get('purchases', [])
+            user_purchases.append(purchase_data)
+            db.update_user(user_id, {'purchases': user_purchases})
+            
+            # Trả về kết quả thành công
+            return {
+                'success': True,
+                'product_name': product.get('name', 'Unknown'),
+                'price': product_price,
+                'new_balance': new_balance,
+                'account_info': account.get('data', '')
+            }
+        except Exception as e:
+            logger.error(f"Error in process_purchase: {e}")
+            return {
+                'success': False,
+                'message': 'Đã xảy ra lỗi khi xử lý giao dịch. Vui lòng thử lại sau.'
+            }
+
+    # Xử lý các callback data
+    if data == "premium_accounts":
+        # Hiển thị danh sách tài khoản trả phí
+        products = [p for p in db.get_all_products() if not p.get('is_free', False)]
+        
+        if not products:
+            bot.edit_message_text(
+                "📦 Chưa có sản phẩm trả phí nào.",
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=keyboards.back_button()
+            )
+            return
+        
         bot.edit_message_text(
-            "💰 *Nhập số tiền nạp*\n\n"
-            "Vui lòng nhập số tiền bạn muốn nạp (VD: 150000).\n"
-            "Số tiền tối thiểu là 10,000 VNĐ.",
+            "🔐 *Tài khoản trả phí*\n\nChọn một sản phẩm để xem chi tiết:",
             call.message.chat.id,
             call.message.message_id,
             parse_mode="Markdown",
-            reply_markup=keyboards.back_button("deposit_money")
+            reply_markup=keyboards.product_list_keyboard(products)
+        )
+    
+    elif data == "free_accounts":
+        # Hiển thị danh sách tài khoản miễn phí
+        products = [p for p in db.get_all_products() if p.get('is_free', False)]
+        
+        if not products:
+            bot.edit_message_text(
+                "📦 Chưa có sản phẩm miễn phí nào.",
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=keyboards.back_button()
+            )
+            return
+        
+        bot.edit_message_text(
+            "🆓 *Tài khoản miễn phí*\n\nChọn một sản phẩm để xem chi tiết:",
+            call.message.chat.id,
+            call.message.message_id,
+            parse_mode="Markdown",
+            reply_markup=keyboards.product_list_keyboard(products)
+        )
+    
+    elif data == "tutorial":
+        # Hiển thị hướng dẫn sử dụng
+        bot.edit_message_text(
+            "📚 Hướng dẫn sử dụng:\n\n"
+            "1. Chọn loại tài khoản (trả phí/miễn phí)\n"
+            "2. Chọn sản phẩm bạn muốn mua\n"
+            "3. Xác nhận thanh toán\n"
+            "Để được hỗ trợ, vui lòng liên hệ admin: @ngochacoder",
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=keyboards.back_button()
+        )
+    
+    elif data == "balance":
+        # Hiển thị số dư tài khoản
+        user = db.get_user(user_id)
+        balance = user.get('balance', 0)
+        
+        bot.edit_message_text(
+            f"💰 Số dư tài khoản của bạn: {balance:,} {config.CURRENCY}\n\n"
+            "Để nạp tiền, vui lòng liên hệ admin @ngochacoder.",
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=keyboards.back_button("my_account")  # Thay đổi ở đây
+        )
+    
+    elif data == "admin_panel" and is_admin(user_id):
+        # Lấy cài đặt hiển thị
+        settings = db.get_visibility_settings()
+        show_premium = settings.get('show_premium', True)
+        
+        # Hiển thị bảng điều khiển quản trị
+        bot.edit_message_text(
+            "⚙️ *Bảng điều khiển quản trị*\n\n"
+            f"Hiển thị tài khoản trả phí: {'Bật' if show_premium else 'Tắt'}\n\n"
+            "Chọn một tùy chọn bên dưới:",
+            call.message.chat.id,
+            call.message.message_id,
+            parse_mode="Markdown",
+            reply_markup=keyboards.admin_panel_keyboard()
+        )
+    
+    elif data == "manage_products" and is_admin(user_id):
+        # Hiển thị menu quản lý sản phẩm
+        bot.edit_message_text(
+            "📦 Quản lý sản phẩm",
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=keyboards.product_management()
+        )
+    
+    elif data == "manage_users" and is_admin(user_id):
+        # Hiển thị menu quản lý người dùng
+        bot.edit_message_text(
+            "👥 *Quản lý người dùng*\n\n"
+            "Chọn một tùy chọn bên dưới:",
+            call.message.chat.id,
+            call.message.message_id,
+            parse_mode="Markdown",
+            reply_markup=keyboards.user_management()
+        )
+    
+    elif data == "statistics" and is_admin(user_id):
+        # Hiển thị thống kê
+        stats = get_statistics()
+        bot.edit_message_text(
+            f"📊 Thống kê:\n\n"
+            f"Tổng người dùng: {stats['total_users']}\n"
+            f"Người dùng mới hôm nay: {stats['new_users_today']}\n"
+            f"Tổng đơn hàng: {stats['total_orders']}\n"
+            f"Doanh thu: {stats['revenue']} VNĐ",
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=keyboards.back_button("back_to_admin")
+        )
+    
+    elif data == "product_list" and is_admin(user_id):
+        # Hiển thị danh sách sản phẩm cho admin
+        products = db.get_all_products()
+        bot.edit_message_text(
+            "📋 Danh sách sản phẩm:",
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=keyboards.product_list_keyboard(products, admin=True)
+        )
+    
+    elif data == "user_list" and is_admin(user_id):
+        # Hiển thị danh sách người dùng
+        users = db.get_all_users()
+        bot.edit_message_text(
+            "📋 *Danh sách người dùng*\n\n"
+            "Chọn một người dùng để xem chi tiết:",
+            call.message.chat.id,
+            call.message.message_id,
+            parse_mode="Markdown",
+            reply_markup=keyboards.user_list_keyboard(users)
+        )
+    
+    # Xử lý các callback có pattern
+    elif data.startswith("view_product_"):
+        # Xem chi tiết sản phẩm
+        product_id = int(data.split("_")[2])
+        product = db.get_product(product_id)
+        
+        if product:
+            available_accounts = db.count_available_accounts(product_id)
+            bot.edit_message_text(
+                f"🏷️ {product['name']}\n\n"
+                f"📝 Mô tả: {product['description']}\n"
+                f"💰 Giá: {product['price']} VNĐ\n"
+                f"📦 Còn lại: {available_accounts} tài khoản",
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=keyboards.product_detail_keyboard(product_id)
+            )
+    
+    elif data.startswith("admin_product_") and is_admin(user_id):
+        # Xem chi tiết sản phẩm (admin)
+        product_id = int(data.split("_")[2])
+        product = db.get_product(product_id)
+        
+        if product:
+            available_accounts = db.count_available_accounts(product_id)
+            bot.edit_message_text(
+                f"🏷️ {product['name']}\n\n"
+                f"📝 Mô tả: {product['description']}\n"
+                f"💰 Giá: {product['price']} VNĐ\n"
+                f"📦 Còn lại: {available_accounts} tài khoản\n"
+                f"🆔 ID: {product['id']}",
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=keyboards.product_detail_keyboard(product_id, is_admin=True)
+            )
+    
+    elif data.startswith("admin_user_") and is_admin(user_id):
+        # Xem chi tiết người dùng
+        target_user_id = int(data.split("_")[2])
+        target_user = db.get_user(target_user_id)
+        
+        if target_user:
+            status = "🚫 Đã bị cấm" if target_user.get('banned', False) else "✅ Đang hoạt động"
+            bot.edit_message_text(
+                f"👤 Thông tin người dùng:\n\n"
+                f"ID: {target_user['id']}\n"
+                f"Username: @{target_user.get('username', 'Không có')}\n"
+                f"Tên: {target_user.get('first_name', '')} {target_user.get('last_name', '')}\n"
+                f"Số dư: {target_user.get('balance', 0)} VNĐ\n"
+                f"Trạng thái: {status}",
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=keyboards.back_button("back_to_user_list")
+            )
+    
+    elif data.startswith("buy_product_"):
+        # Mua sản phẩm
+        product_id = int(data.split("_")[2])
+        product = db.get_product(product_id)
+        
+        if product:
+            bot.edit_message_text(
+                f"🛒 Xác nhận mua:\n\n"
+                f"Sản phẩm: {product['name']}\n"
+                f"Giá: {product['price']} VNĐ\n\n"
+                f"Bạn có chắc chắn muốn mua sản phẩm này?",
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=keyboards.confirm_purchase_keyboard(product_id)
+            )
+    
+    elif data.startswith("confirm_purchase_"):
+        # Xác nhận mua hàng
+        product_id = int(data.split("_")[2])
+        
+        # Xử lý mua hàng
+        result = process_purchase(user_id, product_id)
+        
+        if result and result.get('success'):
+            # Gửi thông tin tài khoản cho người dùng
+            bot.edit_message_text(
+                f"✅ *Mua hàng thành công!*\n\n"
+                f"Sản phẩm: {result['product_name']}\n"
+                f"Giá: {result['price']:,} {config.CURRENCY}\n"
+                f"Số dư còn lại: {result['new_balance']:,} {config.CURRENCY}\n\n"
+                f"📝 *Thông tin tài khoản:*\n"
+                f"`{result['account_info']}`\n\n"
+                f"Cảm ơn bạn đã sử dụng dịch vụ!",
+                call.message.chat.id,
+                call.message.message_id,
+                parse_mode="Markdown",
+                reply_markup=keyboards.back_button()
+            )
+            
+            
+            # Gửi thông báo cho admin về giao dịch thành công
+            # Import datetime
+            import datetime
+            current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            admin_notification = (
+                f"💰 *Giao dịch mới thành công!*\n\n"
+                f"Người dùng: @{username} (ID: `{user_id}`)\n"
+                f"Sản phẩm: {result['product_name']}\n"
+                f"Giá: {result['price']:,} {config.CURRENCY}\n"
+                f"Thời gian: {current_time}"
+            )
+            notify_admins(bot, admin_notification, parse_mode="Markdown")
+        else:
+            # Hiển thị thông báo lỗi
+            error_message = result.get('message', 'Đã xảy ra lỗi không xác định') if result else 'Đã xảy ra lỗi không xác định'
+            bot.answer_callback_query(call.id, f"❌ {error_message}", show_alert=True)
+            
+            # Quay lại menu chính
+            bot.edit_message_text(
+                f"🏠 *Menu chính*\n\nSố dư: {user.get('balance', 0):,} {config.CURRENCY}",
+                call.message.chat.id,
+                call.message.message_id,
+                parse_mode="Markdown",
+                reply_markup=keyboards.main_menu(is_admin(user_id))
+            )
+    
+    # Xử lý các nút quay lại
+    elif data == "back_to_main":
+        bot.edit_message_text(
+            f"🏠 *Menu chính*\n\nSố dư: {user.get('balance', 0):,} {config.CURRENCY}",
+            call.message.chat.id,
+            call.message.message_id,
+            parse_mode="Markdown",
+            reply_markup=keyboards.main_menu(is_admin(user_id))
+        )
+    
+    elif data == "back_to_admin":
+        bot.edit_message_text(
+            "⚙️ Panel quản trị viên",
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=keyboards.admin_panel()
+        )
+    
+    elif data == "back_to_product_management":
+        bot.edit_message_text(
+            "📦 Quản lý sản phẩm",
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=keyboards.product_management()
+        )
+    
+    elif data == "back_to_user_management":
+        # Quay lại menu quản lý người dùng
+        bot.edit_message_text(
+            "👥 Quản lý người dùng",
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=keyboards.user_management()
+        )
+    
+    elif data == "ban_user" and is_admin(user_id):
+        # Lưu trạng thái chờ nhập ID người dùng để cấm
+        user_states[user_id] = {
+            'state': 'waiting_for_ban_user_id',
+            'data': {}
+        }
+        
+        bot.send_message(
+            user_id,
+            "🚫 *Cấm người dùng*\n\n"
+            "Vui lòng nhập ID người dùng bạn muốn cấm.\n"
+            "Ví dụ: `123456789`\n\n"
+            "Gửi /cancel để hủy.",
+            parse_mode="Markdown"
         )
         
-        # Lưu trạng thái chờ nhập số tiền
-        user_states[user_id] = {
-            'state': 'waiting_for_deposit_amount'
-        }
+        # Sửa tin nhắn hiện tại để hiển thị trạng thái
+        bot.edit_message_text(
+            "👥 Quản lý người dùng\n\n"
+            "📝 Đang chờ nhập ID người dùng để cấm...",
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=keyboards.back_button("back_to_user_management")
+        )
     
+    elif data == "unban_user" and is_admin(user_id):
+        # Lưu trạng thái chờ nhập ID người dùng để bỏ cấm
+        user_states[user_id] = {
+            'state': 'waiting_for_unban_user_id',
+            'data': {}
+        }
+        
+        bot.send_message(
+            user_id,
+            "✅ *Bỏ cấm người dùng*\n\n"
+            "Vui lòng nhập ID người dùng bạn muốn bỏ cấm.\n"
+            "Ví dụ: `123456789`\n\n"
+            "Gửi /cancel để hủy.",
+            parse_mode="Markdown"
+        )
+        
+        # Sửa tin nhắn hiện tại để hiển thị trạng thái
+        bot.edit_message_text(
+            "👥 Quản lý người dùng\n\n"
+            "📝 Đang chờ nhập ID người dùng để bỏ cấm...",
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=keyboards.back_button("back_to_user_management")
+        )
+    
+    elif data == "back_to_product_list":
+        if is_admin(user_id):
+            products = db.get_all_products()
+            bot.edit_message_text(
+                "📋 Danh sách sản phẩm:",
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=keyboards.product_list_keyboard(products, admin=True)
+            )
+        else:
+            products = [p for p in db.get_all_products() if not p.get('is_free', False)]
+            bot.edit_message_text(
+                "🔐 Danh sách tài khoản trả phí:",
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=keyboards.product_list_keyboard(products)
+            )
+    
+    elif data == "cancel_purchase":
+        bot.edit_message_text(
+            "🏠 Đã hủy giao dịch. Quay lại menu chính",
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=keyboards.main_menu(is_admin(user_id))
+        )
     # Xử lý phân trang
     elif data.startswith("product_page_"):
         page = int(data.split("_")[2])
@@ -1586,7 +1994,7 @@ def handle_state(bot: TeleBot, message: Message) -> None:
                 "🛒 Bạn chưa mua tài khoản nào.",
                 call.message.chat.id,
                 call.message.message_id,
-                reply_markup=keyboards.back_button("account_menu")
+                reply_markup=keyboards.back_button()
             )
             return
         
@@ -1668,7 +2076,7 @@ def handle_state(bot: TeleBot, message: Message) -> None:
             call.message.chat.id,
             call.message.message_id,
             parse_mode="Markdown",
-            reply_markup=keyboards.purchase_history_keyboard(purchases, page)
+            reply_markup=keyboards.purchase_history_keyboard(purchases, page, "my_account")  # Thêm tham số để quay lại menu tài khoản
         )
     
     elif data.startswith("purchase_page_"):
@@ -1699,6 +2107,23 @@ def handle_state(bot: TeleBot, message: Message) -> None:
             call.message.message_id,
             parse_mode="Markdown",
             reply_markup=keyboards.purchase_history_keyboard(purchases, page)
+        )
+    
+    elif data == "my_account":
+        # Hiển thị menu tài khoản
+        user = db.get_user(user_id)
+        balance = user.get('balance', 0)
+        
+        bot.edit_message_text(
+            f"👤 *Thông tin tài khoản*\n\n"
+            f"ID: `{user_id}`\n"
+            f"Username: @{username}\n"
+            f"Số dư: {balance:,} {config.CURRENCY}\n\n"
+            f"Chọn một tùy chọn bên dưới:",
+            call.message.chat.id,
+            call.message.message_id,
+            parse_mode="Markdown",
+            reply_markup=keyboards.account_menu()
         )
     
     # Đánh dấu callback đã được xử lý
@@ -1881,60 +2306,3 @@ def force_ban_command(bot: TeleBot, message: Message) -> None:
             bot.send_message(user_id, f"❌ Không thể cấm người dùng với ID {target_user_id}.")
     except Exception as e:
         bot.send_message(user_id, f"Error: {str(e)}")
-
-def generate_qr_code(user_id: int, amount: int = 0) -> Optional[bytes]:
-    """
-    Tạo QR code chuyển khoản ngân hàng sử dụng API VietQR
-    
-    Args:
-        user_id: ID người dùng (để tạo nội dung giao dịch)
-        amount: Số tiền cần chuyển, mặc định là 0 để người dùng tự nhập
-    
-    Returns:
-        bytes: Dữ liệu hình ảnh QR code hoặc None nếu có lỗi
-    """
-    try:
-        # Tạo nội dung chuyển khoản với ID người dùng để dễ đối soát
-        add_info = f"NAP TIEN USER {user_id}"
-        
-        # Chuẩn bị dữ liệu gửi đến API
-        payload = {
-            "accountNo": config.BANK_ACCOUNT_NO,
-            "accountName": config.BANK_ACCOUNT_NAME,
-            "acqId": config.BANK_ACQ_ID,
-            "addInfo": add_info,
-            "amount": str(amount) if amount > 0 else "",
-            "template": "compact"
-        }
-        
-        # Headers cho API
-        headers = {
-            "x-client-id": config.VIETQR_CLIENT_ID,
-            "x-api-key": config.VIETQR_API_KEY,
-            "Content-Type": "application/json"
-        }
-        
-        # Gửi request đến API
-        response = requests.post(
-            config.VIETQR_API_URL,
-            json=payload,
-            headers=headers
-        )
-        
-        # Kiểm tra phản hồi
-        if response.status_code == 200:
-            data = response.json()
-            if data.get("code") == "00" and data.get("data"):
-                # Lấy dữ liệu base64 của QR code
-                qr_data = data.get("data", {}).get("qrDataBase64", "")
-                if qr_data:
-                    # Chuyển base64 thành bytes
-                    return base64.b64decode(qr_data)
-        
-        # Log lỗi nếu có
-        logger.error(f"VietQR API Error: {response.status_code}, {response.text}")
-        
-    except Exception as e:
-        logger.error(f"Error generating QR code: {str(e)}")
-    
-    return None
