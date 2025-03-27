@@ -148,24 +148,48 @@ def product_list_keyboard(products: List[Dict[str, Any]], page: int = 0, admin: 
     return markup
 
 def user_list_keyboard(users: List[Dict[str, Any]], page: int = 0) -> InlineKeyboardMarkup:
-    """Tạo bàn phím danh sách người dùng"""
+    """Tạo bàn phím danh sách người dùng với hiển thị 2 cột"""
     markup = InlineKeyboardMarkup()
     
-    # Hiển thị 5 người dùng mỗi trang
-    items_per_page = 5
+    # Hiển thị 10 người dùng mỗi trang (thay vì 5)
+    items_per_page = 10
     start_idx = page * items_per_page
     end_idx = min(start_idx + items_per_page, len(users))
     
-    for i in range(start_idx, end_idx):
-        user = users[i]
+    # Lấy danh sách người dùng cho trang hiện tại
+    current_users = users[start_idx:end_idx]
+    
+    # Hiển thị người dùng theo 2 cột
+    for i in range(0, len(current_users), 2):
+        row_buttons = []
+        
+        # Người dùng đầu tiên trong hàng
+        user = current_users[i]
         user_name = user.get('username', 'Không tên')
         user_id = user.get('id', 0)
         banned = "🚫 " if user.get('banned', False) else ""
         
-        markup.row(InlineKeyboardButton(
+        # Tạo nút cho người dùng đầu tiên
+        row_buttons.append(InlineKeyboardButton(
             f"{banned}{user_name}", 
             callback_data=f"admin_user_{user_id}"
         ))
+        
+        # Nếu còn người dùng thứ hai trong hàng
+        if i + 1 < len(current_users):
+            user = current_users[i + 1]
+            user_name = user.get('username', 'Không tên')
+            user_id = user.get('id', 0)
+            banned = "🚫 " if user.get('banned', False) else ""
+            
+            # Tạo nút cho người dùng thứ hai
+            row_buttons.append(InlineKeyboardButton(
+                f"{banned}{user_name}", 
+                callback_data=f"admin_user_{user_id}"
+            ))
+        
+        # Thêm hàng vào bàn phím
+        markup.row(*row_buttons)
     
     # Nút điều hướng trang
     nav_buttons = []

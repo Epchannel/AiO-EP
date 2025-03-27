@@ -13,6 +13,7 @@ import os
 import requests
 import base64
 from io import BytesIO
+import telebot.apihelper
 
 # Thiết lập logging
 logging.basicConfig(
@@ -361,6 +362,10 @@ def user_list_command(bot: TeleBot, message: Message) -> None:
         bot.send_message(user_id, "👥 Chưa có người dùng nào.")
         return
     
+    # Sắp xếp người dùng theo username (a-z)
+    # Đảm bảo sắp xếp không phân biệt chữ hoa/thường và xử lý trường hợp username là None
+    users = sorted(users, key=lambda x: str(x.get('username', '')).lower() if x.get('username') is not None else '')
+    
     # Lưu trạng thái để xử lý phân trang
     user_states[user_id] = {
         'state': 'viewing_user_list',
@@ -374,74 +379,127 @@ def user_list_command(bot: TeleBot, message: Message) -> None:
 
 def display_user_list_page(bot: TeleBot, user_id: int, message_id: int = None) -> None:
     """Hiển thị một trang danh sách người dùng"""
-    state = user_states.get(user_id, {})
-    users = state.get('users', [])
-    page = state.get('page', 0)
-    search_query = state.get('search_query', '').lower()
-    
-    # Lọc người dùng theo từ khóa tìm kiếm nếu có
-    if search_query:
-        filtered_users = []
-        for user in users:
-            username = str(user.get('username', '')).lower()
-            user_id_str = str(user.get('id', ''))
-            if search_query in username or search_query in user_id_str:
-                filtered_users.append(user)
-        users = filtered_users
-    
-    # Số người dùng mỗi trang
-    per_page = 5
-    total_pages = (len(users) + per_page - 1) // per_page
-    
-    if total_pages == 0:
-        text = "🔍 Không tìm thấy người dùng nào phù hợp."
-        markup = keyboards.user_list_navigation_keyboard(0, 0, search_query)
-    else:
-        # Lấy người dùng cho trang hiện tại
-        start_idx = page * per_page
-        end_idx = min(start_idx + per_page, len(users))
-        current_users = users[start_idx:end_idx]
+    try:
+        state = user_states.get(user_id, {})
+        users = state.get('users', [])
+        page = state.get('page', 0)
+        search_query = state.get('search_query', '').lower()
         
-        # Tạo nội dung tin nhắn
-        text = f"👥 *Danh sách người dùng* (Trang {page+1}/{total_pages})\n\n"
+        # Sắp xếp người dùng theo username (a-z)
+        # Đảm bảo sắp xếp không phân biệt chữ hoa/thường và xử lý trường hợp username là None
+        users = sorted(users, key=lambda x: str(x.get('username', '')).lower() if x.get('username') is not None else '')
         
-        for i, user in enumerate(current_users, 1):
-            username = user.get('username', 'Không có')
-            user_id = user.get('id', 'N/A')
-            balance = user.get('balance', 0)
-            banned = "🚫" if user.get('banned', False) else "✅"
+        # Cập nhật users đã sắp xếp vào state
+        if user_id in user_states:
+            user_states[user_id]['users'] = users
+        
+        # Lọc người dùng theo từ khóa tìm kiếm nếu có
+        if search_query:
+            filtered_users = []
+            for user in users:
+                username = str(user.get('username', '')).lower()
+                user_id_str = str(user.get('id', ''))
+                if search_query in username or search_query in user_id_str:
+                    filtered_users.append(user)
+            users = filtered_users
+        
+        # Số người dùng mỗi trang - tăng lên 10
+        per_page = 10
+        total_pages = max(1, (len(users) + per_page - 1) // per_page)
+        
+        # Đảm bảo page không vượt quá total_pages
+        page = min(page, total_pages - 1)
+        if page < 0:
+            page = 0
+        
+        if len(users) == 0:
+            text = "🔍 Không tìm thấy người dùng nào phù hợp."
+            markup = keyboards.user_list_navigation_keyboard(0, 0, search_query)
+        else:
+            # Lấy người dùng cho trang hiện tại
+            start_idx = page * per_page
+            end_idx = min(start_idx + per_page, len(users))
+            current_users = users[start_idx:end_idx]
             
-            text += f"{i}. {banned} @{username} (ID: `{user_id}`)\n   💰 {balance:,} {config.CURRENCY}\n\n"
+            # Tạo nội dung tin nhắn
+            text = f"👥 *Danh sách người dùng* (Trang {page+1}/{total_pages})\n\n"
+            
+            for i, user in enumerate(current_users, 1):
+                # Escape special characters in username to prevent Markdown parsing issues
+                username = user.get('username', 'Không có')
+                # Replace any Markdown special characters with escaped versions
+                username = username.replace('_', '\\_').replace('*', '\\*').replace('`', '\\`').replace('[', '\\[')
+                
+                user_id_val = user.get('id', 'N/A')
+                balance = user.get('balance', 0)
+                banned = "🚫" if user.get('banned', False) else "✅"
+                
+                text += f"{i}. {banned} @{username} (ID: `{user_id_val}`)\n   💰 {balance:,} {config.CURRENCY}\n\n"
+            
+            # Tạo bàn phím điều hướng
+            markup = keyboards.user_list_navigation_keyboard(page, total_pages, search_query)
         
-        # Tạo bàn phím điều hướng
-        markup = keyboards.user_list_navigation_keyboard(page, total_pages, search_query)
-    
-    # Gửi hoặc cập nhật tin nhắn
-    if message_id:
-        try:
-            bot.edit_message_text(
-                text,
-                user_id,
-                message_id,
-                parse_mode="Markdown",
-                reply_markup=markup
-            )
-        except Exception as e:
-            logger.error(f"Error updating user list message: {e}")
-            # Nếu không thể cập nhật, gửi tin nhắn mới
+        # Gửi hoặc cập nhật tin nhắn
+        if message_id:
+            try:
+                bot.edit_message_text(
+                    text,
+                    user_id,
+                    message_id,
+                    parse_mode="Markdown",
+                    reply_markup=markup
+                )
+            except telebot.apihelper.ApiTelegramException as e:
+                # Bỏ qua lỗi "message is not modified"
+                if "message is not modified" not in str(e):
+                    logger.error(f"Error updating user list message: {e}")
+                    # Nếu lỗi liên quan đến Markdown, thử gửi lại không có parse_mode
+                    if "can't parse entities" in str(e):
+                        try:
+                            bot.edit_message_text(
+                                text.replace('*', '').replace('`', ''),  # Remove Markdown formatting
+                                user_id,
+                                message_id,
+                                reply_markup=markup
+                            )
+                            return
+                        except Exception as inner_e:
+                            logger.error(f"Error sending plain text message: {inner_e}")
+                    
+                    # Nếu vẫn không thể, gửi tin nhắn mới
+                    bot.send_message(
+                        user_id,
+                        text,
+                        parse_mode="Markdown",
+                        reply_markup=markup
+                    )
+            except Exception as e:
+                logger.error(f"Error updating user list message: {e}")
+                # Nếu không thể cập nhật, gửi tin nhắn mới
+                bot.send_message(
+                    user_id,
+                    text,
+                    parse_mode="Markdown",
+                    reply_markup=markup
+                )
+        else:
             bot.send_message(
                 user_id,
                 text,
                 parse_mode="Markdown",
                 reply_markup=markup
             )
-    else:
-        bot.send_message(
-            user_id,
-            text,
-            parse_mode="Markdown",
-            reply_markup=markup
-        )
+    except Exception as e:
+        logger.error(f"Error in display_user_list_page: {e}")
+        try:
+            # Send a simple message without Markdown formatting
+            bot.send_message(
+                user_id,
+                "❌ Đã xảy ra lỗi khi hiển thị danh sách người dùng. Vui lòng thử lại sau.",
+                reply_markup=keyboards.back_button("admin_panel")
+            )
+        except:
+            pass
 
 def ban_user_command(bot: TeleBot, message: Message) -> None:
     """Xử lý lệnh /ban_user"""
@@ -1008,7 +1066,7 @@ def handle_state(bot: TeleBot, message: Message) -> None:
     # Thêm các trạng thái khác ở đây
 
 def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
-    """Xử lý callback query từ các nút inline"""
+    """Xử lý callback query"""
     user_id = call.from_user.id
     username = call.from_user.username or f"user_{user_id}"
     data = call.data
@@ -1284,17 +1342,39 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
             reply_markup=keyboards.product_list_keyboard(products, admin=True)
         )
     
-    elif data == "user_list" and is_admin(user_id):
+    elif data == "user_list":
         # Hiển thị danh sách người dùng
-        users = db.get_all_users()
-        bot.edit_message_text(
-            "📋 *Danh sách người dùng*\n\n"
-            "Chọn một người dùng để xem chi tiết:",
-            call.message.chat.id,
-            call.message.message_id,
-            parse_mode="Markdown",
-            reply_markup=keyboards.user_list_keyboard(users)
-        )
+        try:
+            users = db.get_all_users()
+            
+            if not users:
+                bot.edit_message_text(
+                    "👥 Chưa có người dùng nào.",
+                    call.message.chat.id,
+                    call.message.message_id
+                )
+                return
+            
+            # Sắp xếp người dùng theo username (a-z)
+            # Đảm bảo sắp xếp không phân biệt chữ hoa/thường và xử lý trường hợp username là None
+            users = sorted(users, key=lambda x: str(x.get('username', '')).lower() if x.get('username') is not None else '')
+            
+            # Lưu trạng thái để xử lý phân trang
+            user_states[user_id] = {
+                'state': 'viewing_user_list',
+                'page': 0,
+                'users': users,
+                'search_query': ''
+            }
+            
+            # Hiển thị trang đầu tiên
+            display_user_list_page(bot, user_id, call.message.message_id)
+        except Exception as e:
+            logger.error(f"Error displaying user list: {e}")
+            try:
+                bot.answer_callback_query(call.id, "Đã xảy ra lỗi khi hiển thị danh sách người dùng.", show_alert=True)
+            except:
+                pass
     
     # Xử lý các callback có pattern
     elif data.startswith("view_product_"):
@@ -1460,7 +1540,7 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
         }
         
         bot.send_message(
-            user_id,
+                                user_id,
             "🚫 *Cấm người dùng*\n\n"
             "Vui lòng nhập ID người dùng bạn muốn cấm.\n"
             "Ví dụ: `123456789`\n\n"
@@ -1547,15 +1627,23 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
                 reply_markup=keyboards.product_list_keyboard(products, page=page)
             )
     
-    elif data.startswith("user_page_") and is_admin(user_id):
-        page = int(data.split("_")[2])
-        users = db.get_all_users()
-        bot.edit_message_text(
-            "📋 Danh sách người dùng:",
-            call.message.chat.id,
-            call.message.message_id,
-            reply_markup=keyboards.user_list_keyboard(users, page=page)
-        )
+    elif data.startswith("user_page_"):
+        # Xử lý phân trang danh sách người dùng
+        try:
+            page = int(data.split("_")[2])
+            
+            # Cập nhật trang hiện tại
+            if user_id in user_states:
+                user_states[user_id]['page'] = page
+            
+            # Hiển thị trang mới
+            display_user_list_page(bot, user_id, call.message.message_id)
+        except Exception as e:
+            logger.error(f"Error navigating user list: {e}")
+            try:
+                bot.answer_callback_query(call.id, "Đã xảy ra lỗi khi điều hướng danh sách.", show_alert=True)
+            except:
+                pass
     
     # Thêm xử lý cho các nút admin
     elif data.startswith("add_money_") and is_admin(user_id):
@@ -1575,7 +1663,10 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
                 f"ID: {target_user['id']}\n"
                 f"Username: @{target_user.get('username', 'Không có')}\n"
                 f"Số dư hiện tại: {target_user.get('balance', 0):,} {config.CURRENCY}\n\n"
-                f"Vui lòng nhập số tiền muốn thêm:"
+                f"Vui lòng nhập số tiền muốn thêm:",
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=keyboards.deposit_amount_keyboard()
             )
     
     elif data.startswith("ban_user_") and is_admin(user_id):
