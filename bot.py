@@ -5,6 +5,7 @@ import handlers
 import os
 import logging
 from database import Database
+import importlib
 
 # Thiết lập logging
 logging.basicConfig(
@@ -22,10 +23,26 @@ bot = telebot.TeleBot(config.TOKEN)
 # Khởi tạo cơ sở dữ liệu
 db = Database()
 
+# Khởi tạo các module
+try:
+    # Động import các module
+    from modules.files import FileManager
+    file_manager = FileManager(bot, db)
+    # Thêm các module khác ở đây khi cần
+except ImportError as e:
+    logger.error(f"Không thể import module: {e}")
+    file_manager = None
+
 def main():
     """Hàm chính để chạy bot"""
     # Đảm bảo thư mục data tồn tại
     os.makedirs("data", exist_ok=True)
+    
+    # Đảm bảo thư mục modules tồn tại
+    os.makedirs("modules", exist_ok=True)
+    
+    # Đảm bảo thư mục downloads tồn tại
+    os.makedirs("downloads", exist_ok=True)
     
     # Đăng ký các handler
     handlers.register_handlers(bot)

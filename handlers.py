@@ -14,6 +14,7 @@ import requests
 import base64
 from io import BytesIO
 import telebot.apihelper
+from modules.files import FileManager
 
 # Thiết lập logging
 logging.basicConfig(
@@ -27,12 +28,17 @@ db = Database()
 # Lưu trạng thái của người dùng
 user_states = {}
 
+# Khởi tạo file_manager
+file_manager = None
+
 def is_admin(user_id: int) -> bool:
     """Kiểm tra xem người dùng có phải là admin không"""
     return user_id in config.ADMIN_IDS
 
 def register_handlers(bot: TeleBot) -> None:
     """Đăng ký tất cả các handler cho bot"""
+    global file_manager
+    file_manager = FileManager(bot, db)
     
     # Command handlers
     bot.register_message_handler(lambda msg: start_command(bot, msg), commands=['start'])
@@ -1078,6 +1084,14 @@ def handle_state(bot: TeleBot, message: Message) -> None:
                 )
         except ValueError:
             bot.send_message(user_id, "❌ ID người dùng phải là một số.")
+    
+    elif state == 'waiting_for_download_url':
+        # Xử lý URL tải file
+        # Xóa trạng thái người dùng
+        del user_states[user_id]
+        
+        # Chuyển xử lý cho file_manager
+        file_manager.process_download_url(message)
     
     # Thêm các trạng thái khác ở đây
 
@@ -2343,6 +2357,31 @@ def handle_callback_query(bot: TeleBot, call: CallbackQuery) -> None:
     
     # Đánh dấu callback đã được xử lý
     bot.answer_callback_query(call.id)
+    
+    # Add the file download handlers here, inside the function
+    if data == "download_files":
+        # Sử dụng file_manager để hiển thị menu tải file
+        file_manager.show_download_menu(call.message.chat.id, call.message.message_id)
+
+    elif data == "file_list":
+        # Hiển thị danh sách file
+        file_manager.show_file_list(call.message.chat.id, call.message.message_id)
+
+    elif data == "search_file":
+        # Hiển thị form tìm kiếm file
+        file_manager.search_file(call.message.chat.id, call.message.message_id)
+
+    elif data == "popular_files":
+        # Hiển thị danh sách file phổ biến
+        file_manager.show_popular_files(call.message.chat.id, call.message.message_id)
+
+    elif data == "newest_files":
+        # Hiển thị danh sách file mới nhất
+        file_manager.show_newest_files(call.message.chat.id, call.message.message_id)
+
+    elif data == "download_from_url":
+        # Hiển thị form nhập URL để tải file
+        file_manager.download_from_url(call.message.chat.id, call.message.message_id)
 
 def add_admin_command(bot: TeleBot, message: Message) -> None:
     """Xử lý lệnh /add_admin - Thêm admin mới"""

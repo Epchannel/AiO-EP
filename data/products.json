@@ -75,5 +75,12 @@
         "description": "Duolingo là cách phổ biến nhất trên thế giới để học ngôn ngữ. Miễn phí 100%, vui nhộn và dựa trên khoa học.",
         "is_free": true,
         "id": 19
+    },
+    {
+        "name": "ExpressVPN",
+        "price": 0.0,
+        "description": "ExpressVPN là một dịch vụ mạng riêng ảo được cung cấp bởi công ty Express VPN International Ltd, ExpressVPN là nhà cung cấp VPN tốt nhất trong phân lớp",
+        "is_free": true,
+        "id": 20
     }
 ]

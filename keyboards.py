@@ -29,6 +29,11 @@ def main_menu(is_admin: bool = False) -> InlineKeyboardMarkup:
         InlineKeyboardButton("👤 Tài khoản", callback_data="my_account")
     )
     
+    # Thêm nút "Tải file" vào menu chính
+    markup.row(
+        InlineKeyboardButton("📥 Tải file", callback_data="download_files")
+    )
+    
     if is_admin:
         markup.row(
             InlineKeyboardButton("⚙️ Quản trị viên", callback_data="admin_panel")
@@ -434,5 +439,33 @@ def payment_contact_keyboard() -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup()
     markup.row(
         InlineKeyboardButton("👨‍💼 Liên hệ Admin", url="https://t.me/ngochacoder")
+    )
+    return markup
+
+def download_files_menu() -> InlineKeyboardMarkup:
+    """Tạo bàn phím menu tải file"""
+    markup = InlineKeyboardMarkup()
+    markup.row(
+        InlineKeyboardButton("🔗 Tải từ URL", callback_data="download_from_url"),
+        InlineKeyboardButton("🔍 Tìm kiếm file", callback_data="search_file")
+    )
+    markup.row(
+        InlineKeyboardButton("📊 File phổ biến", callback_data="popular_files"),
+        InlineKeyboardButton("🆕 File mới nhất", callback_data="newest_files")
+    )
+    markup.row(
+        InlineKeyboardButton("🔙 Quay lại", callback_data="back_to_main")
+    )
+    return markup
+
+def download_again_keyboard() -> InlineKeyboardMarkup:
+    """Tạo bàn phím sau khi tải file thành công"""
+    markup = InlineKeyboardMarkup()
+    markup.row(
+        InlineKeyboardButton("📥 Tải file khác", callback_data="download_from_url")
+    )
+    markup.row(
+        InlineKeyboardButton("🔙 Quay lại menu tải file", callback_data="download_files"),
+        InlineKeyboardButton("🏠 Menu chính", callback_data="back_to_main")
     )
     return markup 
