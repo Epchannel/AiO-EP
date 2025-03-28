@@ -63,10 +63,17 @@
         "id": 16
     },
     {
-        "name": "Surfshark VPN",
+        "name": "Malwarebytes",
         "price": 0.0,
-        "description": "Surfshark là một công cụ VPN có sở hữu 3200+ máy chủ trong 100 quốc gia để giúp bạn mở khóa thế giới với tất cả các thiết bị của bạn. Nó cho phép bạn truy cập internet ẩn danh và an toàn từ bất cứ đâu bằng cách mã hóa các kết nối.",
+        "description": "Malwarebytes là một phần mềm chống phần mềm độc hại cho Microsoft Windows, macOS, Android và iOS để tìm và xóa phần mềm độc hại. Được phát triển bởi Malwarebytes Corporation, nó được phát hành lần đầu tiên vào tháng 1 năm 2006.",
         "is_free": true,
-        "id": 17
+        "id": 18
+    },
+    {
+        "name": "Duolingo",
+        "price": 0.0,
+        "description": "Duolingo là cách phổ biến nhất trên thế giới để học ngôn ngữ. Miễn phí 100%, vui nhộn và dựa trên khoa học.",
+        "is_free": true,
+        "id": 19
     }
 ]
