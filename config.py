@@ -24,4 +24,4 @@ VIETQR_CLIENT_ID = "<CLIENT_ID_HERE>"  # Thay thế bằng client ID thực củ
 VIETQR_API_KEY = "<API_KEY_HERE>"      # Thay thế bằng API key thực của bạn
 BANK_ACCOUNT_NO = "809248417400001"       # Số tài khoản ngân hàng của bạn
 BANK_ACCOUNT_NAME = "BUI NGOC HA"   # Tên chủ tài khoản
-BANK_ACQ_ID = "970415"                 # Mã ngân hàng (VCB: 970436, MB: 970422, v.v...) 
+BANK_ACQ_ID = "970428"                 # Mã ngân hàng (VCB: 970436, MB: 970422, Nam A: 970428) 
